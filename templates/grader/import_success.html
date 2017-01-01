@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block headers %}
+<title>Success</title>
+{% endblock %}
+
+{% block content %}
+
+    <h1>Success!</h1>
+    <p>This message will be shown only one time. Print up to save.</p>
+    <p>Username is {{ username }}</p>
+    <p>Password is {{ password }}</p>
+
+    <p><a href="/import">Go back to import.</a> </p>
+
+{% endblock %}

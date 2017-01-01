@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block headers %}<title>Home</title>{% endblock %}
+
+{% block content %}
+    <h1>Hello {{ name }}</h1>
+    <p>What would you like to do?</p>
+
+    <a class="pure-button" href="speech">Score a Speech</a>
+    <a class="pure-button" href="interview">Score an Interview</a>
+    {% if user.is_superuser %}
+    <p><a href="import">Import Judge</a></p>
+    <p><a href="admin">Admin Console</a></p>
+    <p><a href="event">Create an Event</a></p>
+    <p><a href="download">Download Scores</a></p>
+    {% endif %}
+    <p></p>
+    <a href="logout">Logout</a>
+
+{% endblock %}

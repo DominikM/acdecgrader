@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block headers %}<h1>Login</h1>{% endblock %}
+
+<h1>Login to you Grader Account</h1>
+
+{% block content %}
+    <form action="/login/" method="post" class="pure-form pure-form-aligned login-form" id="login">
+        {% csrf_token %}
+            {% for field in login_form %}
+                <div class="pure-control-group fieldWrapper login-field">
+                    {{ field.errors }}
+                    {{ field.label_tag }} {{ field }}
+                    {% if field.help_text %}
+                    <p class="help">{{ field.help_text|safe }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        <input type="submit" value="Login" class="pure-button pure-button-primary" />
+    </form>
+
+{% endblock %}
+
+</body>
+</html>

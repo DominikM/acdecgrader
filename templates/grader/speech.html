@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block headers %}
+<title>Speech Score</title>
+{% endblock %}
+
+{% block content %}
+
+    <h1>Score a Speech</h1>
+
+    <div id="name"></div>
+
+    <div class="score-container">
+        <form class="pure-form pure-form-aligned" action="." method="post" id="speech-form">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="fieldWrapper pure-control-group">
+                    {% if field.id_for_label == "id_development_score"  %}
+                        <h3>Speech:</h3>
+                    {% endif %}
+                    {%  if field.id_for_label == "id_content_score" %}
+                        <h3>Impromptu:</h3>
+                    {% endif %}
+                    {{ field.label_tag }} {{ field }}
+                    {% if field.help_text %}
+                    <p class="help">{{ field.help_text|safe }}</p>
+                    {% endif %}
+                </div>
+                {% for error in field.errors %}
+                    <strong>{{ error|escape }}</strong>
+                {% endfor %}
+                <p></p>
+            {% endfor %}
+            <p></p>
+            <input type="submit" value="Submit" class="pure-button pure-button-primary"/>
+        </form>
+    </div>
+
+    <div id="overall_score"></div>
+
+    <p></p>
+    <a href="/">Back</a>
+
+    <script>
+    /*
+    $("#id_student_id").change(function () {
+        console.log("Firing")
+        var val = parseInt($("#id_student_id").value);
+        $.post("/find_student/", {student_id: val, judge_id: {{user.id}}, type: "speech"})
+                .done(function(data) {
+                    if (data["exists"]) {
+                        $("#name").innerHTML = "<h2>" + data["name"] + "</h2>";
+                        if (!data["correct"]) {
+                            $("#name").append("<h3>This student is not registered for your room.</h3>");
+                        }
+                    }
+                    else {
+                        $("#name").innerHTML = "<h3>This student does not exist.</h3>";
+                    }
+                })
+            }
+    );
+    */
+
+    document.getElementById("speech-form").onchange= function() {
+        var scores = []
+        var dev_score = document.getElementById("id_development_score");
+        scores.push(dev_score.options[dev_score.selectedIndex].value);
+
+        var eff_score = document.getElementById("id_effectiveness_score");
+        scores.push(eff_score.options[eff_score.selectedIndex].value);
+
+        var cor_score = document.getElementById("id_correctness_score");
+        scores.push(cor_score.options[cor_score.selectedIndex].value);
+
+        var approp_score = document.getElementById("id_appropriateness_score");
+        scores.push(approp_score.options[approp_score.selectedIndex].value);
+
+        var val_score = document.getElementById("id_value_score");
+        scores.push(val_score.options[val_score.selectedIndex].value);
+
+        var voice_score = document.getElementById("id_voice_score");
+        scores.push(voice_score.options[voice_score.selectedIndex].value);
+
+        var nonverbal = document.getElementById("id_nonverbal_score");
+        scores.push(nonverbal.options[nonverbal.selectedIndex].value);
+
+        var content = document.getElementById("id_content_score");
+        scores.push(content.options[content.selectedIndex].value);
+
+        var delivery = document.getElementById("id_delivery_score");
+        scores.push(delivery.options[delivery.selectedIndex].value);
+
+        var effect = document.getElementById("id_overall_effect");
+        scores.push(effect.options[effect.selectedIndex].value);
+
+        var time = document.getElementById("id_time_violations");
+        time = time.options[time.selectedIndex].value;
+
+        var score = 0;
+
+        for (var i=0; i<scores.length; i++) {
+            if (scores[i] != null && scores[i] != "") {
+                score += scores[i] * 0.1;
+            }
+        }
+
+        if(time != null && time != "") {
+            score += parseInt(time);
+        }
+
+        var overall_display = document.getElementById("overall_score")
+        overall_display.innerHTML = "<h2>" + score + "</h2>";
+    };
+
+
+    </script>
+{% endblock %}

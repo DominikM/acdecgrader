@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block headers %}
+<title>Interview Score</title>
+{% endblock %}
+
+{% block content %}
+
+    <h1>Score an Interview</h1>
+
+    <div class="score-container">
+        <form class="pure-form pure-form-aligned" action="." method="post" id="interview-form">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="fieldWrapper pure-control-group">
+                    {{ field.label_tag }} {{ field }}
+                    {% if field.help_text %}
+                    <p class="help">{{ field.help_text|safe }}</p>
+                    {% endif %}
+                </div>
+                {% for error in field.errors %}
+                    <strong>{{ error|escape }}</strong>
+                {% endfor %}
+                <p></p>
+            {% endfor %}
+            <p></p>
+            <input type="submit" value="Submit" class="pure-button pure-button-primary"/>
+        </form>
+    </div>
+
+    <div id="overall_score"></div>
+
+    <p></p>
+    <a href="/">Back</a>
+
+   <script>
+
+    document.getElementById("interview-form").onchange= function() {
+        var scores = []
+        var a;
+        a = document.getElementById("id_voice_score");
+        scores.push(a.options[a.selectedIndex].value);
+
+        a = document.getElementById("id_language_score");
+        scores.push(a.options[a.selectedIndex].value);
+
+        a = document.getElementById("id_interpersonal_score");
+        scores.push(a.options[a.selectedIndex].value);
+
+        a = document.getElementById("id_nonverbal_score");
+        scores.push(a.options[a.selectedIndex].value);
+
+        a = document.getElementById("id_manner_score");
+        scores.push(a.options[a.selectedIndex].value);
+
+        a = document.getElementById("id_listening_score");
+        scores.push(a.options[a.selectedIndex].value);
+
+        a = document.getElementById("id_answering_score");
+        scores.push(a.options[a.selectedIndex].value);
+
+        a = document.getElementById("id_response_score");
+        scores.push(a.options[a.selectedIndex].value);
+
+        a = document.getElementById("id_overall_effect");
+        scores.push(a.options[a.selectedIndex].value);
+
+        a = document.getElementById("id_appearance_score");
+        scores.push(a.options[a.selectedIndex].value);
+
+        var score = 0;
+
+        for (var i=0; i<scores.length; i++) {
+            if (scores[i] != null && scores[i] != "") {
+                score += scores[i] * 0.1;
+            }
+        }
+
+        var overall_display = document.getElementById("overall_score")
+        overall_display.innerHTML = "<h2>" + score + "</h2>";
+    };
+
+
+    </script>
+
+{% endblock %}

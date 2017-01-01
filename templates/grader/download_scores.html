@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block headers %}
+<title>Download Scores</title>
+{% endblock %}
+
+{% block content %}
+
+    <h1>Download</h1>
+    <form class="pure-form pure-form-aligned" action="." method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Download" class="pure-button pure-button-primary"/>
+    </form>
+
+{% endblock %}

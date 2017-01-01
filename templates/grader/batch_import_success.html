@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block headers %}
+<title>Success</title>
+{% endblock %}
+
+{% block content %}
+
+    <h1>Success!</h1>
+    <p>This message will be shown only one time. Print to save.</p>
+    <table class="pure-table pure-table-horizontal" align="center">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Password</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for judge in judges %}
+            <tr>
+                <td>{{ judge.name }}</td>
+                <td>{{ judge.username }}</td>
+                <td>{{ judge.password }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <p><a href="/import">Go back to import.</a> </p>
+
+{% endblock %}

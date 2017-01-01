@@ -1,0 +1,15 @@
+body {
+    align-content: center;
+    text-align: center;
+    margin: auto;
+}
+
+#login {
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+}
+
+.score-container {
+    margin:5%;
+}

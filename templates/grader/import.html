@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block headers %}
+<title>Import Judges</title>
+{% endblock %}
+
+{% block content %}
+
+    <h1>Import a Judge</h1>
+    <form class="pure-form pure-form-aligned" action="." method="post" id="import_form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Import" class="pure-button pure-button-primary"/>
+    </form>
+
+    <p>OR</p>
+
+    <form enctype="multipart/form-data" class="pure-form pure-form-aligned" action="batch/" method="post" id="batch_import_form">
+        {% csrf_token %}
+        {{ batch_form.as_p }}
+        <input type="submit" value="Import" class="pure-button pure-button-primary"/>
+    </form>
+
+{% endblock %}
