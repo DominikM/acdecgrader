@@ -68,7 +68,7 @@ class SpeechScore(Score):
         super(SpeechScore, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.student_first_name + "'s Speech"
+        return self.student_first_name + ' ' + self.student_last_name + "'s Speech judged by " + str(self.grader.judge)
 
 
 class InterviewScore(Score):
@@ -94,7 +94,7 @@ class InterviewScore(Score):
         super(InterviewScore, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.student_first_name + "'s Interview"
+        return self.student_first_name + ' ' + self.student_last_name + "'s Interview judged by " + str(self.grader.judge)
 
 
 class Event(models.Model):
