@@ -1,0 +1,16 @@
+- [ ] Interface for the scorers to upload and edit the student roster list
+- [ ] Interface for the scorers to upload and edit the judge roster list
+- [ ] Interface for the scorers to to download a list of all judges and their rooms, usernames and passwords
+- [ ] Interface for the judges to log in and see their home screen: their schedule, generated as a list of all the students who are scheduled in the room in order by time slot (pay no mind to breaks)
+- [ ] The schedule shows: ID, Student Name, Time, Event Type (Speech or Interview), Score (blank if no score has been submitted), and a SCORE button to take to the scoring screen (btw: score should be what **the judge** assigned them, not the final averaged score, and should also say NO SHOW if it has been submitted as such. Also, once score has been submitted turn the SCORE button into an EDIT button)
+- [ ] Also on the main page, at the bottom, are "SCORE UNSCHEDULED INTERVIEW" and "SCORE UNSCHEDULED SPEECH" buttons, in case of emergency room shuffling, as well as a LOG OUT button. 
+- [ ] --> SCORE: Judge taken to screen showing the ten scoring categories to fill in (plus time penalty stuff for Speech) 
+- [ ] --> SCORE UNSCHEDULED _____: On top of the ten things, Name will be dropdown menu showing all students (in "ID - STUDENT NAME" format)
+- [ ] Score changes in real time whenever a score category is changed (and each score category has a brief description of what it entails, like on the official rubric)
+- [ ] For Speech, judge _must_ say TIME PENALTY or NO TIME PENALTY _and_ put down the SPEECH TIME for prepared and impromptu each. If the speech time entered *does* warrant a time penalty and the put none, or vice versa, a box or something in red mentioning the discrepancy but saying "If the student was silent for an exceptionally long time, you should still keep it as a penalty" if the time was okay but they marked a penalty. 
+- [ ] Allowing judges to mark "No Show", automatically giving a zero
+- [ ] Also give judges a text box for brief feedback that the student will receive after the competition. 
+- [ ] Interface for the judges to go back and edit any part of a score submission, including which student it was (but with a dialog box saying ARE YOU SURE YOU WANNA DO THIS??)
+- [ ] If unscheduled event happens, add it to the schedule at ten minutes before whatever time it was submitted, maybe with some sort of indication it was unscheduled. 
+- [ ] Interface for scorers (eg us) to download all raw data as well as refined data (Student, ID, Final Speech Score, Final Interview Score)
+- [ ] Ability to host it as scoring.massdecathlon.org if possible
