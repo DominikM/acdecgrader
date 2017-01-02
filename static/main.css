@@ -7,9 +7,15 @@ body {
 #login {
     margin-left: auto;
     margin-right: auto;
-    width: 50%;
+    width: 250px;
 }
 
 .score-container {
     margin:5%;
+}
+
+.centered-form {
+    width: 30%;
+    min-width: 300px;
+    margin: auto;
 }
