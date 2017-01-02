@@ -9,11 +9,11 @@
     <h1>Score an Interview</h1>
 
     <div class="score-container">
-        <form class="pure-form pure-form-aligned" action="." method="post" id="interview-form">
+        <form class="ui form centered-form" action="." method="post" id="interview-form">
             {% csrf_token %}
 
             {% for field in form %}
-                <div class="fieldWrapper pure-control-group">
+                <div class="fieldWrapper one field">
                     {{ field.label_tag }} {{ field }}
                     {% if field.help_text %}
                     <p class="help">{{ field.help_text|safe }}</p>
@@ -25,7 +25,7 @@
                 <p></p>
             {% endfor %}
             <p></p>
-            <input type="submit" value="Submit" class="pure-button pure-button-primary"/>
+            <input type="submit" value="Submit" class="ui button primary"/>
         </form>
     </div>
 

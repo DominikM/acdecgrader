@@ -5,10 +5,10 @@
 <h1>Login to you Grader Account</h1>
 
 {% block content %}
-    <form action="/login/" method="post" class="pure-form pure-form-aligned login-form" id="login">
+    <form action="/login/" method="post" class="ui form centered-form" id="login">
         {% csrf_token %}
             {% for field in login_form %}
-                <div class="pure-control-group fieldWrapper login-field">
+                <div class="one field fieldWrapper login-field">
                     {{ field.errors }}
                     {{ field.label_tag }} {{ field }}
                     {% if field.help_text %}
@@ -16,7 +16,7 @@
                     {% endif %}
                 </div>
             {% endfor %}
-        <input type="submit" value="Login" class="pure-button pure-button-primary" />
+        <input type="submit" value="Login" class="ui button primary" />
     </form>
 
 {% endblock %}

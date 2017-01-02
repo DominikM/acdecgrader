@@ -7,10 +7,10 @@
 {% block content %}
 
     <h1>Create an Event</h1>
-    <form class="pure-form pure-form-aligned" action="." method="post">
+    <form class="ui form centered-form" action="." method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <input type="submit" value="Create" class="pure-button pure-button-primary"/>
+        <input type="submit" value="Create" class="ui button primary"/>
     </form>
 
 {% endblock %}

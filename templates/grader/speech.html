@@ -11,11 +11,11 @@
     <div id="name"></div>
 
     <div class="score-container">
-        <form class="pure-form pure-form-aligned" action="." method="post" id="speech-form">
+        <form class="ui form centered-form" action="." method="post" id="speech-form">
             {% csrf_token %}
 
             {% for field in form %}
-                <div class="fieldWrapper pure-control-group">
+                <div class="fieldWrapper one field">
                     {% if field.id_for_label == "id_development_score"  %}
                         <h3>Speech:</h3>
                     {% endif %}
@@ -33,7 +33,7 @@
                 <p></p>
             {% endfor %}
             <p></p>
-            <input type="submit" value="Submit" class="pure-button pure-button-primary"/>
+            <input type="submit" value="Submit" class="ui button primary"/>
         </form>
     </div>
 
