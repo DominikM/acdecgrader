@@ -171,3 +171,7 @@ def event(request):
             return render(request, "grader/create_event.html", context={'form':form})
 
 
+def student_panel_view(request):
+    if request.user.is_superuser:
+        return render(request, "grader/student_panel.html")
+
