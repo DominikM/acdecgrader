@@ -14,6 +14,20 @@ class Judge(User):
         return self.first_name + " " + self.last_name
 
 
+class Student(models.Model):
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    event = models.ForeignKey('Event')
+    # TODO: how to point a student at a specific time slot and at a judge?
+
+    class Meta:
+        verbose_name = 'Student'
+        verbose_name_plural = 'Students'
+
+    def __str__(self):
+        return self.first_name + " " + self.last_name
+
+
 grading_system = (
     (0, "0 - Poor"),
     (100, "1 - Poor"),
