@@ -191,9 +191,11 @@ def student_panel_view(request):
 
         for _student in students:
             student_dict = {
+                'id': _student.id,
                 'event_id': _student.event.id,
                 'first_name': _student.first_name,
-                'last_name': _student.last_name
+                'last_name': _student.last_name,
+                'rank': _student.rank
             }
 
             student_dicts.append(student_dict)
