@@ -13,11 +13,18 @@ class Judge(User):
     def __str__(self):
         return self.first_name + " " + self.last_name
 
+rank = (
+    (0, 'Varsity'),
+    (1, 'Scholastic'),
+    (2, 'Honors')
+)
+
 
 class Student(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     event = models.ForeignKey('Event')
+    rank = models.IntegerField(choices=rank)
     # TODO: how to point a student at a specific time slot and at a judge?
 
     class Meta:
