@@ -40,12 +40,14 @@ class GraderViewTestCase(TestCase):
         cls.student1 = Student.objects.create(
             first_name="Bob",
             last_name="Bitdiddle",
-            event=cls.event1
+            event=cls.event1,
+            rank=0
         )
         cls.student2 = Student.objects.create(
             first_name="Harry",
             last_name="Potter",
-            event=cls.event2
+            event=cls.event2,
+            rank=2
         )
         cls.admin = User.objects.create_superuser(
             'dominikm',
@@ -67,8 +69,10 @@ class GraderViewTestCase(TestCase):
                 {'id': self.event2.id, 'name': self.event2.name, 'date': self.event2.date.strftime('%Y-%m-%d'), 'location': self.event2.location},
             ],
             'students': [
-                {'event_id': self.student1.event.id, 'first_name': self.student1.first_name, 'last_name': self.student1.last_name},
-                {'event_id': self.student2.event.id, 'first_name': self.student2.first_name, 'last_name': self.student2.last_name},
+                {'id': self.student1.id, 'event_id': self.student1.event.id,
+                 'first_name': self.student1.first_name, 'last_name': self.student1.last_name, 'rank': self.student1.rank},
+                {'id': self.student2.id, 'event_id': self.student2.event.id,
+                 'first_name': self.student2.first_name, 'last_name': self.student2.last_name, 'rank': self.student2.rank},
             ]
         }
 
