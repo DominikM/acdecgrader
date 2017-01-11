@@ -19,3 +19,10 @@ body {
     min-width: 300px;
     margin: auto;
 }
+
+.person-table-container {
+    margin: auto;
+    margin-top: 20px;
+    width: 70%;
+    min-width: 500px;
+}
