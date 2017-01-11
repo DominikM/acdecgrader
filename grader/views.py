@@ -8,8 +8,9 @@ from .forms import LoginForm, SpeechForm, InterviewForm, JudgeForm, UploadJudges
 import random
 import string
 from .utils import create_judges_from_csv, export_scores
-from .models import Event, Judge
+from .models import Event, Judge, Student
 from datetime import date
+from django.core import serializers
 import json
 # Create your views here.
 
@@ -173,5 +174,33 @@ def event(request):
 
 def student_panel_view(request):
     if request.user.is_superuser:
-        return render(request, "grader/student_panel.html")
+        event_dicts = []
+        student_dicts = []
+        events = Event.objects.all()
+        students = Student.objects.all()
 
+        for _event in events:
+            event_dict = {
+                'id': _event.id,
+                'name': _event.name,
+                'date': _event.date.strftime('%Y-%m-%d'),
+                'location': _event.location
+            }
+
+            event_dicts.append(event_dict)
+
+        for _student in students:
+            student_dict = {
+                'event_id': _student.event.id,
+                'first_name': _student.first_name,
+                'last_name': _student.last_name
+            }
+
+            student_dicts.append(student_dict)
+
+        data = {
+            'events': event_dicts,
+            'students': student_dicts
+        }
+
+        return render(request, "grader/student_panel.html", context={'data': json.dumps(data)})
