@@ -26,3 +26,9 @@ body {
     width: 70%;
     min-width: 500px;
 }
+
+#icons {
+    visibility: hidden;
+    position: absolute;
+    margin-right: 10px;
+}
