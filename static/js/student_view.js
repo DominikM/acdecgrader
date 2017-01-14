@@ -110,6 +110,8 @@ function edit_row(student) {
             rank_option.innerHTML = ranks[i];
         }
 
+        rank_select.selectedIndex = data.students[state.selected_student].rank;
+
         var input_divs = selected_row.getElementsByTagName('div');
         input_divs[0].className = 'ui input'; // first name
         input_divs[1].className = 'ui input'; // last name
