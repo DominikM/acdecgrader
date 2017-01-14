@@ -226,3 +226,52 @@ def student_delete(request):
             'message': 'Deletion succeeded'
         })
 
+
+def student_edit(request):
+    if request.user.is_superuser and request.method == 'POST':
+        if not request.POST.get('id'):
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Must provide ID in post request'
+            })
+
+        try:
+            student = Student.objects.get(id=request.POST['id'])
+        except Student.DoesNotExist:
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Student does not exist'
+            })
+
+        if not (request.POST.get('first_name') or
+                request.POST.get('last_name') or
+                request.POST.get('rank') or
+                request.POST.get('event')):
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Must supply an attribute to edit'
+            })
+
+        if request.POST.get('first_name'):
+            student.first_name = request.POST['first_name']
+        if request.POST.get('last_name'):
+            student.last_name = request.POST['last_name']
+        if request.POST.get('rank'):
+            student.rank = int(request.POST['rank'])
+        if request.POST.get('event'):
+            try:
+                new_event = Event.objects.get(id=request.POST['event'])
+            except Event.DoesNotExist:
+                return JsonResponse({
+                    'result': 'fail',
+                    'message': 'Event does not exist'
+                })
+
+            student.event = new_event
+
+        student.save()
+        return JsonResponse({
+            'result': 'success',
+            'message': 'Edit succeeded'
+        })
+
