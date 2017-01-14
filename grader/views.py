@@ -1,16 +1,12 @@
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.http.response import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
 from .forms import LoginForm, SpeechForm, InterviewForm, JudgeForm, UploadJudgesForm, EventForm, DownloadForm
 import random
 import string
 from .utils import create_judges_from_csv, export_scores
 from .models import Event, Judge, Student
 from datetime import date
-from django.core import serializers
 import json
 # Create your views here.
 
@@ -206,3 +202,27 @@ def student_panel_view(request):
         }
 
         return render(request, "grader/student_panel.html", context={'data': json.dumps(data)})
+
+
+def student_delete(request):
+    if request.user.is_superuser and request.method == 'POST':
+        if not request.POST.get('id'):
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Must provide ID in post request'
+            })
+
+        try:
+            to_delete = Student.objects.get(id=request.POST['id'])
+        except Student.DoesNotExist:
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Student does not exist'
+            })
+
+        to_delete.delete()
+        return JsonResponse({
+            'result': 'success',
+            'message': 'Deletion succeeded'
+        })
+
