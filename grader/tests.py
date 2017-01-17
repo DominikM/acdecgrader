@@ -79,3 +79,35 @@ class GraderViewTestCase(TestCase):
         actual_student_json = json.dumps(actual_student_json)
 
         self.assertEqual(student_json, actual_student_json)
+
+    def test_delete_student(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(
+            '/students/delete/',
+            {'id': self.student1.id}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        with self.assertRaises(Student.DoesNotExist):
+            Student.objects.get(id=self.student1.id)
+
+    def test_edit_student(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(
+            '/students/edit/',
+            {
+                'id': self.student1.id,
+                'first_name': 'Jeff',
+                'last_name': 'La',
+                'rank': 1,
+                'event': self.event2.id
+            }
+        )
+
+        updated_student = Student.objects.get(id=self.student1.id)
+
+        self.assertEqual(updated_student.first_name, 'Jeff')
+        self.assertEqual(updated_student.last_name, 'La')
+        self.assertEqual(updated_student.rank, 1)
+        self.assertEqual(updated_student.event, self.event2)
+

@@ -27,7 +27,9 @@ urlpatterns = [
     url(r'^export/$', views.export, name="export"),
     url(r'^event/$', views.event, name="event"),
     url(r'^download/$', views.download, name="download"),
-    url(r'^students/$', views.student_panel_view, name="student_panel")
+    url(r'^students/$', views.student_panel_view, name="student_panel"),
+    url(r'^students/delete/$', views.student_delete, name="student_delete"),
+    url(r'^students/edit/$', views.student_edit, name="student_edit")
     # url(r'^find_student/$', views.find_student, name="find_student")
 
 ]
