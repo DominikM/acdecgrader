@@ -5,7 +5,7 @@ function change_event(selector) {
     for (var i=0; i<data.students.length; i++) {
         if (parseInt(data.students[i].event_id) == state.selected_event) {
             // we check to see if the student is associated with the event, if so we throw them in the list of current students
-            state.show_students.push(data.students[i]);
+            state.show_students.push(i);
         }
 
         // now we need to add it to the table
@@ -31,16 +31,18 @@ function update_table() {
     }
 
     for (var i=0; i<state.show_students.length; i++) {
+        var cur_student = data.students[state.show_students[i]];
+
         // For name
         var student_f_name = document.createElement('td');
-        student_f_name.innerHTML = data.students[i].first_name;
+        student_f_name.innerHTML = cur_student.first_name;
 
         var student_l_name = document.createElement('td');
-        student_l_name.innerHTML = data.students[i].last_name;
+        student_l_name.innerHTML = cur_student.last_name;
 
         // For rank
         var student_rank = document.createElement('td');
-        switch (data.students[i].rank) {
+        switch (cur_student.rank) {
             case 0:
                 student_rank.innerHTML = 'Varsity';
                 break;
@@ -91,13 +93,13 @@ function edit_row(student) {
             .appendChild(document.createElement('div'))
             .appendChild(document.createElement('input'));
 
-        first_name_input.value = state.show_students[student].first_name;
+        first_name_input.value = data.students[state.selected_student].first_name;
 
         last_name_input = cells[1]
             .appendChild(document.createElement('div'))
             .appendChild(document.createElement('input'));
 
-        last_name_input.value = state.show_students[student].last_name;
+        last_name_input.value = data.students[state.selected_student].last_name;
 
         rank_select = cells[2]
             .appendChild(document.createElement('select'));
