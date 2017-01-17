@@ -148,9 +148,20 @@ function save_student() {
 }
 
 function delete_student() {
-    // TODO: delete request
-    state.show_students.splice(state.selected_student, 1);
-    unedit_row();
+    $.post(
+        data.urls.delete,
+        {id: data.students[state.selected_student].id},
+        function (result) {
+            if (result.result == 'fail') {
+                console.error(result.message);
+            } else if (result.result == 'success') {
+                state.show_students.splice(state.selected_student, 1);
+                unedit_row();
+            } else {
+                console.error('Something went wrong that none of us prepared for.')
+            }
+        }
+    );
 }
 
 function init_page() {
