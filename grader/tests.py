@@ -73,7 +73,11 @@ class GraderViewTestCase(TestCase):
                  'first_name': self.student1.first_name, 'last_name': self.student1.last_name, 'rank': self.student1.rank},
                 {'id': self.student2.id, 'event_id': self.student2.event.id,
                  'first_name': self.student2.first_name, 'last_name': self.student2.last_name, 'rank': self.student2.rank},
-            ]
+            ],
+            'urls': {
+                'delete': reverse('student_delete'),
+                'edit': reverse('student_edit')
+            }
         }
 
         actual_student_json = json.dumps(actual_student_json)

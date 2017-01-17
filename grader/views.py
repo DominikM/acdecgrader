@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.http.response import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.urls import reverse
 from .forms import LoginForm, SpeechForm, InterviewForm, JudgeForm, UploadJudgesForm, EventForm, DownloadForm
 import random
 import string
@@ -196,9 +197,15 @@ def student_panel_view(request):
 
             student_dicts.append(student_dict)
 
+        urls = {
+            'delete': reverse('student_delete'),
+            'edit': reverse('student_edit')
+        }
+
         data = {
             'events': event_dicts,
-            'students': student_dicts
+            'students': student_dicts,
+            'urls': urls
         }
 
         return render(request, "grader/student_panel.html", context={'data': json.dumps(data)})
