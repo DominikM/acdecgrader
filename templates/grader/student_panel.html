@@ -47,8 +47,8 @@
     data = {{ data | safe }};
     state = {
         selected_event: null,
-        show_students: [],
-        selected_student: null
+        show_students: [], // list of indices pointing towards data.students
+        selected_student: null, // index of selected student in data.students
     };
     var icons_div = document.getElementById('icons');
     var event_selector = document.getElementById('event-select');

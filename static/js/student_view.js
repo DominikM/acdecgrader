@@ -1,5 +1,11 @@
 function change_event(selector) {
     state.selected_event = parseInt(selector.value);
+
+    // now we need to add it to the table
+    update_table();
+}
+
+function update_table() {
     state.show_students = [];
 
     for (var i=0; i<data.students.length; i++) {
@@ -7,13 +13,8 @@ function change_event(selector) {
             // we check to see if the student is associated with the event, if so we throw them in the list of current students
             state.show_students.push(i);
         }
-
-        // now we need to add it to the table
-        update_table();
     }
-}
 
-function update_table() {
     student_table.innerHTML = "";
 
     // check to see if current showen students is non zero
@@ -69,7 +70,7 @@ function update_table() {
                 return function () {
                     edit_row(val);
             }
-        })(i) ;
+        })(state.show_students[i]) ;
 
         student_table.appendChild(row);
     }
@@ -89,17 +90,19 @@ function edit_row(student) {
         for (var i = 0; i < cells.length; i++)
             cells[i].innerHTML = "";
 
+        var sel_student = data.students[state.selected_student];
+
         first_name_input = cells[0]
             .appendChild(document.createElement('div'))
             .appendChild(document.createElement('input'));
 
-        first_name_input.value = data.students[state.selected_student].first_name;
+        first_name_input.value = sel_student.first_name;
 
         last_name_input = cells[1]
             .appendChild(document.createElement('div'))
             .appendChild(document.createElement('input'));
 
-        last_name_input.value = data.students[state.selected_student].last_name;
+        last_name_input.value = sel_student.last_name;
 
         rank_select = cells[2]
             .appendChild(document.createElement('select'));
@@ -112,7 +115,7 @@ function edit_row(student) {
             rank_option.innerHTML = ranks[i];
         }
 
-        rank_select.selectedIndex = data.students[state.selected_student].rank;
+        rank_select.selectedIndex = sel_student.rank;
 
         var input_divs = selected_row.getElementsByTagName('div');
         input_divs[0].className = 'ui input'; // first name
@@ -150,12 +153,12 @@ function save_student() {
 function delete_student() {
     $.post(
         data.urls.delete,
-        {id: data.students[state.selected_student].id},
+        {id: data.students[state.show_students[state.selected_student]].id},
         function (result) {
             if (result.result == 'fail') {
                 console.error(result.message);
             } else if (result.result == 'success') {
-                state.show_students.splice(state.selected_student, 1);
+                data.students.splice(state.selected_student, 1); // remove from data
                 unedit_row();
             } else {
                 console.error('Something went wrong that none of us prepared for.')
