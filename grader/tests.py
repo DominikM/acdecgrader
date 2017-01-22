@@ -115,3 +115,26 @@ class GraderViewTestCase(TestCase):
         self.assertEqual(updated_student.rank, 1)
         self.assertEqual(updated_student.event, self.event2)
 
+
+    def test_student_create(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(
+            '/students/create/',
+            {
+                'first_name': 'Bob',
+                'last_name': 'Bitdiddle',
+                'rank': 2,
+                'event': self.event2.id
+            }
+        )
+
+        new_student = Student.objects.get(last_name='Bitdiddle', first_name='Bob')
+
+        if self.assertEqual(response.status_code, 200) and \
+            self.assertEqual(response.POST['result'], 'success'):
+
+            self.assertEqual(new_student.first_name, 'Bob')
+            self.assertEqual(new_student.last_name, 'Bitdiddle')
+            self.assertEqual(new_student.rank, 2)
+            self.assertEqual(new_student.event, self.event2)
+
