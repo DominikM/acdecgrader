@@ -48,12 +48,18 @@
     state = {
         selected_event: null,
         show_students: [], // list of indices pointing towards data.students
-        selected_student: null, // index of selected student in data.students
+        selected_student: null, // index of selected student in show_students
+    };
+    elements = {
+        first_name_input: null,
+        last_name_input: null,
+        rank_select: null
     };
     var icons_div = document.getElementById('icons');
     var event_selector = document.getElementById('event-select');
     var student_table = document.getElementById('student-table');
     var delete_student_modal = $('#delete-modal');
+    var edit_student_inputs = null;
     window.onload = init_page();
     </script>
 {% endblock %}

@@ -1,20 +1,21 @@
 function change_event(selector) {
     state.selected_event = parseInt(selector.value);
-
     // now we need to add it to the table
+    refresh_students();
     update_table();
 }
 
-function update_table() {
+function refresh_students() {
     state.show_students = [];
-
     for (var i=0; i<data.students.length; i++) {
         if (parseInt(data.students[i].event_id) == state.selected_event) {
             // we check to see if the student is associated with the event, if so we throw them in the list of current students
             state.show_students.push(i);
         }
     }
+}
 
+function update_table() {
     student_table.innerHTML = "";
 
     // check to see if current showen students is non zero
@@ -70,7 +71,7 @@ function update_table() {
                 return function () {
                     edit_row(val);
             }
-        })(state.show_students[i]) ;
+        })(i) ;
 
         student_table.appendChild(row);
     }
@@ -90,37 +91,37 @@ function edit_row(student) {
         for (var i = 0; i < cells.length; i++)
             cells[i].innerHTML = "";
 
-        var sel_student = data.students[state.selected_student];
+        var sel_student = data.students[state.show_students[state.selected_student]];
 
-        first_name_input = cells[0]
+        elements.first_name_input = cells[0]
             .appendChild(document.createElement('div'))
             .appendChild(document.createElement('input'));
 
-        first_name_input.value = sel_student.first_name;
+        elements.first_name_input.value = sel_student.first_name;
 
-        last_name_input = cells[1]
+        elements.last_name_input = cells[1]
             .appendChild(document.createElement('div'))
             .appendChild(document.createElement('input'));
 
-        last_name_input.value = sel_student.last_name;
+        elements.last_name_input.value = sel_student.last_name;
 
-        rank_select = cells[2]
+        elements.rank_select = cells[2]
             .appendChild(document.createElement('select'));
 
         var ranks = ['Varsity', 'Scholastic', 'Honors'];
 
         for (var i=0; i < ranks.length; i++) {
-            var rank_option = rank_select.appendChild(document.createElement('option'));
+            var rank_option = elements.rank_select.appendChild(document.createElement('option'));
             rank_option.value = i;
             rank_option.innerHTML = ranks[i];
         }
 
-        rank_select.selectedIndex = sel_student.rank;
+        elements.rank_select.selectedIndex = sel_student.rank;
 
         var input_divs = selected_row.getElementsByTagName('div');
         input_divs[0].className = 'ui input'; // first name
         input_divs[1].className = 'ui input'; // last name
-        $(rank_select).dropdown();
+        $(elements.rank_select).dropdown();
         cells[2].style.overflow = 'visible';
 
         // now let's add the buttons to the left of the row
@@ -138,6 +139,7 @@ function edit_row(student) {
 function unedit_row() {
     state.selected_student = null;
     icons_div.style.visibility = "hidden";
+    refresh_students();
     update_table();
 }
 
@@ -147,6 +149,31 @@ function show_delete_modal() {
 
 function save_student() {
     // TODO: save request
+    var student = data.students[state.show_students[state.selected_student]];
+    var n_first_name = elements.first_name_input.value;
+    var n_last_name = elements.last_name_input.value;
+    var n_rank = parseInt(elements.rank_select.value);
+    $.post(
+        data.urls.edit,
+        {
+            id: student.id,
+            first_name: n_first_name,
+            last_name: n_last_name,
+            rank: n_rank
+        },
+        function (result) {
+            if (result.result == 'fail') {
+                console.error(result.message);
+            } else if (result.result == 'success') {
+                student.first_name = n_first_name;
+                student.last_name = n_last_name;
+                student.rank = n_rank;
+                unedit_row();
+            } else {
+                console.error('Something went wrong that none of us prepared for.');
+            }
+        }
+    );
     unedit_row();
 }
 
