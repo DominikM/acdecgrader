@@ -128,7 +128,7 @@ function edit_row(student) {
 
         var row_loc = selected_row.getBoundingClientRect();
         
-        icons_div.style.top = row_loc.top + 'px';
+        icons_div.style.top = row_loc.top + document.body.scrollTop + 'px';
         icons_div.style.height = icons_div.style.lineHeight = (row_loc.bottom - row_loc.top) + 'px';
         icons_div.style.right = row_loc.right + 'px';
         icons_div.style.visibility = "visible";
