@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.http.response import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
-from .forms import LoginForm, SpeechForm, InterviewForm, JudgeForm, UploadJudgesForm, EventForm, DownloadForm
+from .forms import LoginForm, SpeechForm, InterviewForm, UserForm, UploadJudgesForm, EventForm, DownloadForm
 import random
 import string
 from .utils import create_judges_from_csv, export_scores
@@ -22,7 +23,7 @@ def index(request):
 def import_judge(request):
     if request.user.is_superuser:
         if request.method == "POST":
-            judge_data = JudgeForm(request.POST)
+            judge_data = UserForm(request.POST)
             if judge_data.is_valid():
                 judge = judge_data.save(commit=False)
                 judge.username = judge.first_name[0] + judge.last_name
@@ -34,7 +35,7 @@ def import_judge(request):
             else:
                 return render(request, "grader/import.html", context={"form": judge_data})
         else:
-            judge_form = JudgeForm()
+            judge_form = UserForm()
             judge_form.fields['event'].queryset = Event.objects.filter(date__gte=date.today())
             return render(request, "grader/import.html", context={"form": judge_form, "batch_form": UploadJudgesForm()})
 
@@ -334,3 +335,163 @@ def student_create(request):
         else:
             return JsonResponse({'result': 'fail', 'message': error})
 
+
+def judge_panel_view(request):
+    if request.user.is_superuser:
+        event_dicts = []
+        judge_dicts = []
+        events = Event.objects.all()
+        judges = Judge.objects.all()
+
+        for _event in events:
+            event_dict = {
+                'id': _event.id,
+                'name': _event.name,
+                'date': _event.date.strftime('%Y-%m-%d'),
+                'location': _event.location
+            }
+
+            event_dicts.append(event_dict)
+
+        for _judge in judges:
+            judge_dict = {
+                'id': _judge.id,
+                'event_id': _judge.event.id,
+                'first_name': _judge.user.first_name,
+                'last_name': _judge.user.last_name,
+            }
+
+            judge_dicts.append(judge_dict)
+
+        urls = {
+            'delete': reverse('judge_delete'),
+            'edit': reverse('judge_edit'),
+            'create': reverse('judge_create')
+        }
+
+        data = {
+            'events': event_dicts,
+            'judges': judge_dicts,
+            'urls': urls
+        }
+
+        return render(request, "grader/judge_panel.html", context={'data': json.dumps(data)})
+
+    else:
+        return redirect(reverse('index'))
+
+
+def judge_delete(request):
+    if request.user.is_superuser and request.method == 'POST':
+        if not request.POST.get('id'):
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Must provide ID in post request'
+            })
+
+        try:
+            to_delete = Judge.objects.get(id=request.POST['id'])
+        except Judge.DoesNotExist:
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Judge does not exist'
+            })
+
+        to_delete.delete()
+        return JsonResponse({
+            'result': 'success',
+            'message': 'Deletion succeeded'
+        })
+
+
+def judge_edit(request):
+    if request.user.is_superuser and request.method == 'POST':
+        if not request.POST.get('id'):
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Must provide ID in post request'
+            })
+
+        try:
+            judge = Judge.objects.get(id=request.POST['id'])
+        except Judge.DoesNotExist:
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Judge does not exist'
+            })
+
+        if not (request.POST.get('first_name') or
+                request.POST.get('last_name') or
+                request.POST.get('event')):
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Must supply an attribute to edit'
+            })
+
+        if request.POST.get('first_name'):
+            judge.user.first_name = request.POST['first_name']
+        if request.POST.get('last_name'):
+            judge.user.last_name = request.POST['last_name']
+        if request.POST.get('event'):
+            try:
+                new_event = Event.objects.get(id=request.POST['event'])
+            except Event.DoesNotExist:
+                return JsonResponse({
+                    'result': 'fail',
+                    'message': 'Event does not exist'
+                })
+
+            judge.event = new_event
+
+        judge.user.save()
+        judge.save()
+        return JsonResponse({
+            'result': 'success',
+            'message': 'Edit succeeded'
+        })
+
+
+def judge_create(request):
+    if request.user.is_superuser and request.method == 'POST':
+        new_judge = Judge()
+        new_user = User()
+
+        error = ""
+
+        if request.POST.get("first_name"):
+            new_user.first_name = request.POST['first_name']
+        else:
+            error += 'Must supply a first name. '
+
+        if request.POST.get("last_name"):
+            new_user.last_name = request.POST['last_name']
+        else:
+            error += 'Must supply a last name. '
+
+        if request.POST.get('event'):
+            try:
+                n_event = Event.objects.get(id=int(request.POST['event']))
+                new_judge.event = n_event
+            except Event.DoesNotExist:
+                error += 'Not a valid event id. '
+
+        else:
+            error += 'Must supply an event id. '
+
+        if error == "":
+            new_user.username = new_user.first_name[0] + new_user.last_name
+            new_user.save()
+            new_judge.user = new_user
+            new_judge.save()
+            return JsonResponse({
+                'result': 'success',
+                'judge': {
+                    'id': new_judge.id,
+                    'first_name': new_user.first_name,
+                    'last_name': new_user.last_name,
+                    'event_id': new_judge.event.id
+                }
+            })
+
+        else:
+            return JsonResponse({'result': 'fail', 'message': error})

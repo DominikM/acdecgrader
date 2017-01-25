@@ -2,12 +2,12 @@
 {% load staticfiles %}
 
 {% block headers %}
-    <title>Student Panel</title>
+    <title>Judge Panel</title>
     <script src="{% static 'js/jquery.form.min.js' %}"></script>
 {% endblock %}
 
 {% block content %}
-    <h1>Student Panel</h1>
+    <h1>Judge Panel</h1>
     <div id="controls">
         <div>
             <p>Choose an event: </p>
@@ -15,7 +15,7 @@
         </div>
         <div class="add-person">
             <p style="height: 1.5em; line-height: 1.5em">
-                Add Student(s)
+                Add Judge(s)
                 <i class="add square green link big icon" onclick="show_add_modal()"></i>
             </p>
         </div>
@@ -25,22 +25,21 @@
         <table class="ui celled fixed table">
             <thead>
                 <tr>
-                    <th colspan="1">First Name</th>
-                    <th colspan="1">Last Name</th>
-                    <th colspan="3">Rank</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
                 </tr>
             </thead>
-            <tbody id="student-table">
+            <tbody id="judge-table">
                 <tr>
-                    <td colspan="5">Select an event to view students</td>
+                    <td>Select an event to view judges</td>
                 </tr>
             </tbody>
         </table>
     </div>
 
     <div id="delete-modal" class="ui modal">
-        <div class="header">Delete Student</div>
-        <div class="content">Are you sure you want to delete this student?</div>
+        <div class="header">Delete Judge</div>
+        <div class="content">Are you sure you want to delete this judge?</div>
         <div class="actions">
             <div class="ui positive button">Yes</div>
             <div class="ui negative button">No</div>
@@ -50,7 +49,7 @@
     <div id="add-modal" class="ui modal">
         <div class="header">Add Student(s)</div>
         <div class="content">
-            <form id="add-student-form" class="ui form" action="{% url 'student_create' %}">
+            <form id="add-judge-form" class="ui form" action="{% url 'judge_create' %}">
                 <label>Name</label>
                 <div class="two fields">
                     <div class="field">
@@ -60,14 +59,6 @@
                         <input type="text" name="last_name" placeholder="Last Name" required>
                     </div>
                 </div>
-                <label>Rank</label>
-                <div class="field">
-                    <select id="rank-dropdown" class="ui dropdown" name="rank" required>
-                        <option value="0">Varsity</option>
-                        <option value="1">Scholastic</option>
-                        <option value="2">Honors</option>
-                    </select>
-                </div>
                 <input type="hidden" name="event">
             </form>
         </div>
@@ -75,11 +66,11 @@
         <div class="content">
             <p>Or you can submit a .csv file</p>
             <div>
-                <label for="student-csv" class="ui icon button">
+                <label for="judge-csv" class="ui icon button">
                     <i class="file icon"></i>
                     CSV File
                 </label>
-                <input type="file" id="student-csv" name="student_csv" style="display:none">
+                <input type="file" id="judge-csv" name="judge_csv" style="display:none">
             </div>
         </div>
         <div class="actions">
@@ -94,27 +85,26 @@
         <i class="large minus square link icon"></i>
     </div>
 
-    <script src="{% static 'js/student_view.js' %}"></script>
+    <script src="{% static 'js/judge_view.js' %}"></script>
     <script>
     data = {{ data | safe }};
     state = {
         selected_event: null,
-        show_students: [], // list of indices pointing towards data.students
-        selected_student: null, // index of selected student in show_students
+        show_judges: [], // list of indices pointing towards data.judges
+        selected_judge: null, // index of selected judge in show_judges
     };
     elements = {
         first_name_input: null,
         last_name_input: null,
         rank_select: null,
-        add_student: document.getElementsByClassName('add-person')[0]
+        add_judge: document.getElementsByClassName('add-person')[0]
     };
     var icons_div = document.getElementById('icons');
     var event_selector = document.getElementById('event-select');
-    var student_table = document.getElementById('student-table');
-    var delete_student_modal = $('#delete-modal');
-    var rank_dropdown = $('#rank-dropdown')
-    var add_student_modal = $('#add-modal');
-    var edit_student_inputs = null;
+    var judge_table = document.getElementById('judge-table');
+    var delete_judge_modal = $('#delete-modal');
+    var add_judge_modal = $('#add-modal');
+    var edit_judge_inputs = null;
 
     window.onload = init_page();
     </script>

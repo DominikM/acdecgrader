@@ -33,7 +33,7 @@ body {
     margin-right: 10px;
 }
 
-#add-student {
+.add-person {
     margin: 1em 0 0 0;
     visibility: hidden;
 }

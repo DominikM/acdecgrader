@@ -27,10 +27,16 @@ urlpatterns = [
     url(r'^export/$', views.export, name="export"),
     url(r'^event/$', views.event, name="event"),
     url(r'^download/$', views.download, name="download"),
+
     url(r'^students/$', views.student_panel_view, name="student_panel"),
     url(r'^students/delete/$', views.student_delete, name="student_delete"),
     url(r'^students/edit/$', views.student_edit, name="student_edit"),
-    url(r'^students/create/$', views.student_create, name="student_create")
+    url(r'^students/create/$', views.student_create, name="student_create"),
+
+    url(r'^judges/$', views.judge_panel_view, name="judge_panel"),
+    url(r'^judges/delete/$', views.judge_delete, name="judge_delete"),
+    url(r'^judges/edit/$', views.judge_edit, name="judge_edit"),
+    url(r'^judges/create/$', views.judge_create, name="judge_create"),
     # url(r'^find_student/$', views.find_student, name="find_student")
 
 ]

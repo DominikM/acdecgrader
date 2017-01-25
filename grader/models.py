@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-class Judge(User):
+class Judge(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     room = models.CharField(null=True, max_length=10)
     event = models.ForeignKey('Event', null=True)
 
@@ -11,7 +12,7 @@ class Judge(User):
         verbose_name_plural = 'Judges'
 
     def __str__(self):
-        return self.first_name + " " + self.last_name
+        return self.user.first_name + " " + self.user.last_name
 
 rank = (
     (0, 'Varsity'),

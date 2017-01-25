@@ -1,5 +1,6 @@
 from django import forms
-from django.forms import SelectDateWidget, ModelChoiceField
+from django.forms import SelectDateWidget, ModelChoiceField, inlineformset_factory
+from django.contrib.auth.models import User
 from .models import SpeechScore, InterviewScore, Judge, Event
 from datetime import date
 
@@ -22,15 +23,24 @@ class EventForm(forms.ModelForm):
         }
 
 
-class JudgeForm(forms.ModelForm):
+JudgeInlineForm = inlineformset_factory(
+    User,
+    Judge,
+    fields = [
+        'room',
+        'event'
+    ]
+)
+
+class UserForm(forms.ModelForm):
     class Meta:
-        model = Judge
+        model = User
         fields = [
             'first_name',
-            'last_name',
-            'email',
-            'room',
-            'event',
+            'last_name'
+        ]
+        inlines = [
+            JudgeInlineForm
         ]
 
 
