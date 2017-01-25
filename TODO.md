@@ -13,4 +13,4 @@
 - [ ] Interface for the judges to go back and edit any part of a score submission, including which student it was (but with a dialog box saying ARE YOU SURE YOU WANNA DO THIS??)
 - [ ] If unscheduled event happens, add it to the schedule at ten minutes before whatever time it was submitted, maybe with some sort of indication it was unscheduled. 
 - [ ] Interface for scorers (eg us) to download all raw data as well as refined data (Student, ID, Final Speech Score, Final Interview Score)
-- [ ] Ability to host it as scoring.massdecathlon.org if possible
+- [x] Ability to host it as scoring.massdecathlon.org if possible

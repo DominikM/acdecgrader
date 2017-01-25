@@ -1,4 +1,5 @@
 function change_event(selector) {
+    elements.add_student.style.visibility = 'visible';
     state.selected_event = parseInt(selector.value);
     // now we need to add it to the table
     refresh_students();
@@ -147,6 +148,11 @@ function show_delete_modal() {
     delete_student_modal.modal('show');
 }
 
+function show_add_modal() {
+    add_student_modal.modal('show');
+    rank_dropdown.dropdown();
+}
+
 function save_student() {
     // TODO: save request
     var student = data.students[state.show_students[state.selected_student]];
@@ -194,6 +200,42 @@ function delete_student() {
     );
 }
 
+function add_student() {
+    file_input = document.getElementById('student-csv');
+    if (file_input.value != '') {
+
+    } else {
+        form = $('#add-student-form');
+        inputs = form.find('.field');
+        console.log(inputs);
+        if (form[0].checkValidity()) {
+            $("input[name='event']").val(state.selected_event);
+            form.ajaxSubmit({
+                url: data.urls.create,
+                type:'post',
+                success: function(result) {
+                    if (result.result == 'success') {
+                        console.log(result.student);
+                        data.students.push(result.student);
+                        refresh_students();
+                        update_table();
+                        return true
+                    } else {
+                        console.error(result.message);
+                        return false
+                    }
+                }
+            });
+        } else {
+            for (var i = 0; i<(inputs.length-1); i++){
+                $(inputs[i]).addClass('error');
+            }
+            return false;
+        }
+
+    }
+}
+
 function init_page() {
     for (var i=0; i<data.events.length; i++) {
         var new_event = document.createElement('option');
@@ -210,6 +252,11 @@ function init_page() {
     delete_student_modal
         .modal({
             onApprove: delete_student
+        });
+
+    add_student_modal
+        .modal({
+            onApprove: add_student
         });
 
     event_selector.selectedIndex = -1;

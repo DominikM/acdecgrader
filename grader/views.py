@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.http.response import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
@@ -199,7 +199,8 @@ def student_panel_view(request):
 
         urls = {
             'delete': reverse('student_delete'),
-            'edit': reverse('student_edit')
+            'edit': reverse('student_edit'),
+            'create': reverse('student_create')
         }
 
         data = {
@@ -209,6 +210,9 @@ def student_panel_view(request):
         }
 
         return render(request, "grader/student_panel.html", context={'data': json.dumps(data)})
+
+    else:
+        return redirect(reverse('index'))
 
 
 def student_delete(request):
@@ -281,4 +285,52 @@ def student_edit(request):
             'result': 'success',
             'message': 'Edit succeeded'
         })
+
+
+def student_create(request):
+    if request.user.is_superuser and request.method == 'POST':
+        new_student = Student()
+
+        error = ""
+
+        if request.POST.get("first_name"):
+            new_student.first_name = request.POST['first_name']
+        else:
+            error += 'Must supply a first name. '
+
+        if request.POST.get("last_name"):
+            new_student.last_name = request.POST['last_name']
+        else:
+            error += 'Must supply a last name. '
+
+        if request.POST.get('rank'):
+            new_student.rank = int(request.POST['rank'])
+        else:
+            error += 'Must supply a rank. '
+
+        if request.POST.get('event'):
+            try:
+                n_event = Event.objects.get(id=int(request.POST['event']))
+                new_student.event = n_event
+            except Event.DoesNotExist:
+                error += 'Not a valid event id. '
+
+        else:
+            error += 'Must supply an event id. '
+
+        if error == "":
+            new_student.save()
+            return JsonResponse({
+                'result': 'success',
+                'student': {
+                    'id': new_student.id,
+                    'first_name': new_student.first_name,
+                    'last_name': new_student.last_name,
+                    'rank': new_student.rank,
+                    'event_id': new_student.event.id
+                }
+            })
+
+        else:
+            return JsonResponse({'result': 'fail', 'message': error})
 

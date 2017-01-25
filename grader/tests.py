@@ -128,10 +128,10 @@ class GraderViewTestCase(TestCase):
             }
         )
 
-        new_student = Student.objects.get(last_name='Bitdiddle', first_name='Bob')
-
         if self.assertEqual(response.status_code, 200) and \
             self.assertEqual(response.POST['result'], 'success'):
+
+            new_student = Student.objects.get(last_name='Bitdiddle', first_name='Bob')
 
             self.assertEqual(new_student.first_name, 'Bob')
             self.assertEqual(new_student.last_name, 'Bitdiddle')

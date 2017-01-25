@@ -1,13 +1,24 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 
-{% block headers %}<title>Student Panel</title>{% endblock %}
+{% block headers %}
+    <title>Student Panel</title>
+    <script src="{% static 'js/jquery.form.min.js' %}"></script>
+{% endblock %}
 
 {% block content %}
     <h1>Student Panel</h1>
-    <div>
-        <p>Choose an event: </p>
-        <select class="ui dropdown" id="event-select" onchange="change_event(this)"></select>
+    <div id="controls">
+        <div>
+            <p>Choose an event: </p>
+            <select class="ui dropdown" id="event-select" onchange="change_event(this)"></select>
+        </div>
+        <div id="add-student">
+            <p style="height: 1.5em; line-height: 1.5em">
+                Add Student(s)
+                <i class="add square green link big icon" onclick="show_add_modal()"></i>
+            </p>
+        </div>
     </div>
 
     <div class="person-table-container">
@@ -36,6 +47,47 @@
         </div>
     </div>
 
+    <div id="add-modal" class="ui modal">
+        <div class="header">Add Student(s)</div>
+        <div class="content">
+            <form id="add-student-form" class="ui form" action="{% url 'student_create' %}">
+                <label>Name</label>
+                <div class="two fields">
+                    <div class="field">
+                        <input type="text" name="first_name" placeholder="First Name" required>
+                    </div>
+                    <div class="field">
+                        <input type="text" name="last_name" placeholder="Last Name" required>
+                    </div>
+                </div>
+                <label>Rank</label>
+                <div class="field">
+                    <select id="rank-dropdown" class="ui dropdown" name="rank" required>
+                        <option value="0">Varsity</option>
+                        <option value="1">Scholastic</option>
+                        <option value="2">Honors</option>
+                    </select>
+                </div>
+                <input type="hidden" name="event">
+            </form>
+        </div>
+        <div class="ui divider"></div>
+        <div class="content">
+            <p>Or you can submit a .csv file</p>
+            <div>
+                <label for="student-csv" class="ui icon button">
+                    <i class="file icon"></i>
+                    CSV File
+                </label>
+                <input type="file" id="student-csv" name="student_csv" style="display:none">
+            </div>
+        </div>
+        <div class="actions">
+            <div class="ui positive button">Create</div>
+            <div class="ui negative button">Nevermind</div>
+        </div>
+    </div>
+
     <div id="icons">
         <i class="large green checkmark box link icon"></i>
         <i class="large red remove circle link icon"></i>
@@ -53,13 +105,17 @@
     elements = {
         first_name_input: null,
         last_name_input: null,
-        rank_select: null
+        rank_select: null,
+        add_student: document.getElementById('add-student')
     };
     var icons_div = document.getElementById('icons');
     var event_selector = document.getElementById('event-select');
     var student_table = document.getElementById('student-table');
     var delete_student_modal = $('#delete-modal');
+    var rank_dropdown = $('#rank-dropdown')
+    var add_student_modal = $('#add-modal');
     var edit_student_inputs = null;
+
     window.onload = init_page();
     </script>
 {% endblock %}

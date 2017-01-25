@@ -32,3 +32,8 @@ body {
     position: absolute;
     margin-right: 10px;
 }
+
+#add-student {
+    margin: 1em 0 0 0;
+    visibility: hidden;
+}
