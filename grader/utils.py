@@ -1,4 +1,5 @@
 from django.core.files import File
+from django.contrib.auth.models import User
 from .models import SpeechScore, InterviewScore, Event
 import csv
 from .models import Judge
@@ -19,13 +20,19 @@ def create_judges_from_csv(file, event_id):
         username = first_name[0] + last_name
         password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
-        new_judge = Judge(username=username,
-                          email=email,
-                          room=room, first_name=first_name,
-                          last_name=last_name,
-                          event=event)
-        new_judge.set_password(password)
-        new_judge.save()
+        new_user = User.objects.create_user(
+                        username=username,
+                        password=password,
+                        first_name=first_name,
+                        last_name=last_name,
+                        email=email
+        )
+
+        new_judge = Judge.objects.create(
+            email=email,
+            room=room,
+            event=event,
+            user=new_user)
 
         judges.append({'name': full_name, 'username':username, 'password':password})
 

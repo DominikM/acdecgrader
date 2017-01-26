@@ -51,7 +51,7 @@
         <div class="header">Add Student(s)</div>
         <div class="content">
             <form id="add-student-form" class="ui form" action="{% url 'student_create' %}">
-                <label>Name</label>
+                <label style="font-weight: 700">Name</label>
                 <div class="two fields">
                     <div class="field">
                         <input type="text" name="first_name" placeholder="First Name" required>
@@ -60,13 +60,19 @@
                         <input type="text" name="last_name" placeholder="Last Name" required>
                     </div>
                 </div>
-                <label>Rank</label>
-                <div class="field">
-                    <select id="rank-dropdown" class="ui dropdown" name="rank" required>
-                        <option value="0">Varsity</option>
-                        <option value="1">Scholastic</option>
-                        <option value="2">Honors</option>
-                    </select>
+                <div class="two fields">
+                    <div class="field">
+                        <label>ID</label>
+                        <input type="number" >
+                    </div>
+                    <div class="field">
+                        <label>Rank</label>
+                        <select id="rank-dropdown" class="ui dropdown" name="rank" required>
+                            <option value="0">Varsity</option>
+                            <option value="1">Scholastic</option>
+                            <option value="2">Honors</option>
+                        </select>
+                    </div>
                 </div>
                 <input type="hidden" name="event">
             </form>
@@ -112,7 +118,7 @@
     var event_selector = document.getElementById('event-select');
     var student_table = document.getElementById('student-table');
     var delete_student_modal = $('#delete-modal');
-    var rank_dropdown = $('#rank-dropdown')
+    var rank_dropdown = $('#rank-dropdown');
     var add_student_modal = $('#add-modal');
     var edit_student_inputs = null;
 

@@ -480,6 +480,7 @@ def judge_create(request):
 
         if error == "":
             new_user.username = new_user.first_name[0] + new_user.last_name
+            new_user.password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
             new_user.save()
             new_judge.user = new_user
             new_judge.save()
