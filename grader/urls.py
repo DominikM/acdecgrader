@@ -22,8 +22,6 @@ urlpatterns = [
     url(r'^logout/$', views.logout_view, name="logout"),
     url(r'^speech/$', views.speech, name="speech"),
     url(r'^interview/$', views.interview, name="interview"),
-    url(r'^import/$', views.import_judge, name="import"),
-    url(r'^import/batch/$', views.import_judges, name="batch_import"),
     url(r'^export/$', views.export, name="export"),
     url(r'^event/$', views.event, name="event"),
     url(r'^download/$', views.download, name="download"),
@@ -37,6 +35,7 @@ urlpatterns = [
     url(r'^judges/delete/$', views.judge_delete, name="judge_delete"),
     url(r'^judges/edit/$', views.judge_edit, name="judge_edit"),
     url(r'^judges/create/$', views.judge_create, name="judge_create"),
+    url(r'^judges/bulk_create/$', views.judges_create, name="judges_create")
     # url(r'^find_student/$', views.find_student, name="find_student")
 
 ]

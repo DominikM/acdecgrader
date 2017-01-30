@@ -6,7 +6,8 @@ from django.urls import reverse
 from .forms import LoginForm, SpeechForm, InterviewForm, UserForm, UploadJudgesForm, EventForm, DownloadForm
 import random
 import string
-from .utils import create_judges_from_csv, export_scores
+import csv
+from .utils import export_scores, get_unique_username
 from .models import Event, Judge, Student
 from datetime import date
 import json
@@ -18,36 +19,6 @@ def index(request):
         return render(request, "grader/home.html", context={"name":request.user.first_name})
     else:
         return HttpResponseRedirect("login")
-
-
-def import_judge(request):
-    if request.user.is_superuser:
-        if request.method == "POST":
-            judge_data = UserForm(request.POST)
-            if judge_data.is_valid():
-                judge = judge_data.save(commit=False)
-                judge.username = judge.first_name[0] + judge.last_name
-                password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
-                judge.set_password(password)
-                judge.save()
-
-                return render(request, "grader/import_success.html", context={"username":judge.username, "password": password})
-            else:
-                return render(request, "grader/import.html", context={"form": judge_data})
-        else:
-            judge_form = UserForm()
-            judge_form.fields['event'].queryset = Event.objects.filter(date__gte=date.today())
-            return render(request, "grader/import.html", context={"form": judge_form, "batch_form": UploadJudgesForm()})
-
-
-def import_judges(request):
-    if request.user.is_superuser:
-        if request.method == "POST":
-            judges_data = UploadJudgesForm(request.POST, request.FILES)
-            if judges_data.is_valid():
-                event_id = request.POST['event']
-                judges = create_judges_from_csv(request.FILES['file'], event_id)
-                return render(request, 'grader/batch_import_success.html', context={"judges": judges})
 
 
 def login_view(request):
@@ -102,6 +73,7 @@ def interview(request):
 
     else:
         return HttpResponseRedirect("/")
+
 
 def logout_view(request):
     logout(request)
@@ -359,6 +331,8 @@ def judge_panel_view(request):
                 'event_id': _judge.event.id,
                 'first_name': _judge.user.first_name,
                 'last_name': _judge.user.last_name,
+                'username': _judge.user.username,
+                'password': _judge.password
             }
 
             judge_dicts.append(judge_dict)
@@ -366,7 +340,8 @@ def judge_panel_view(request):
         urls = {
             'delete': reverse('judge_delete'),
             'edit': reverse('judge_edit'),
-            'create': reverse('judge_create')
+            'create': reverse('judge_create'),
+            'bulk_create': reverse('judges_create')
         }
 
         data = {
@@ -397,7 +372,7 @@ def judge_delete(request):
                 'message': 'Judge does not exist'
             })
 
-        to_delete.delete()
+        to_delete.user.delete()
         return JsonResponse({
             'result': 'success',
             'message': 'Deletion succeeded'
@@ -451,6 +426,60 @@ def judge_edit(request):
         })
 
 
+def judges_create(request):
+    if request.user.is_superuser and request.method == 'POST':
+        event_id = request.POST['event']
+        judge_reader = csv.reader(request.FILES['file'].read().decode('utf-8').splitlines())
+        try:
+            event = Event.objects.get(id=event_id)
+        except Event.DoesNotExist:
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Event does not exist'
+            })
+
+        judges = []
+        for row in judge_reader:
+            print(row)
+            full_name = row[0]
+            email = row[1]
+            room = row[2]
+            first_name = full_name.split(' ')[0]
+            last_name = full_name.split(' ')[1]
+            username = get_unique_username(first_name[0] + last_name)
+
+            password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+
+            new_user = User.objects.create_user(
+                username=username,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+                email=email
+            )
+
+            new_judge = Judge.objects.create(
+                room=room,
+                event=event,
+                user=new_user,
+                password=password
+            )
+
+            judges.append({
+                'id': new_judge.id,
+                'first_name': first_name,
+                'last_name': last_name,
+                'event_id': event.id,
+                'username': username,
+                'password': password
+            })
+
+        return JsonResponse({
+            'result': 'success',
+            'judges': judges
+        })
+
+
 def judge_create(request):
     if request.user.is_superuser and request.method == 'POST':
         new_judge = Judge()
@@ -479,9 +508,12 @@ def judge_create(request):
             error += 'Must supply an event id. '
 
         if error == "":
-            new_user.username = new_user.first_name[0] + new_user.last_name
-            new_user.password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+            new_user.username = get_unique_username(new_user.first_name[0] + new_user.last_name)
+
+            new_judge.password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+            new_user.set_password(new_judge.password)
             new_user.save()
+
             new_judge.user = new_user
             new_judge.save()
             return JsonResponse({
@@ -490,7 +522,9 @@ def judge_create(request):
                     'id': new_judge.id,
                     'first_name': new_user.first_name,
                     'last_name': new_user.last_name,
-                    'event_id': new_judge.event.id
+                    'event_id': new_judge.event.id,
+                    'username': new_user.username,
+                    'password': new_judge.password
                 }
             })
 

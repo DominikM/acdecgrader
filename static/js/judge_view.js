@@ -43,11 +43,19 @@ function update_table() {
         var judge_l_name = document.createElement('td');
         judge_l_name.innerHTML = cur_judge.last_name;
 
+        var judge_pass = document.createElement('td');
+        judge_pass.innerHTML = cur_judge.password;
+
+        var judge_user = document.createElement('td');
+        judge_user.innerHTML = cur_judge.username;
+
         document.getElementsByTagName('table')[0].className = "ui celled fixed selectable table";
 
         var row = document.createElement('tr');
         row.appendChild(judge_f_name);
         row.appendChild(judge_l_name);
+        row.appendChild(judge_user);
+        row.appendChild(judge_pass);
 
         row.onclick = (
             function(val) {
@@ -70,8 +78,8 @@ function edit_row(judge) {
 
         var cells = selected_row.getElementsByTagName('td');
 
-        // empty all the cells
-        for (var i = 0; i < cells.length; i++)
+        // empty all the cells except user and pass
+        for (var i = 0; i < cells.length - 2; i++)
             cells[i].innerHTML = "";
 
         var sel_judge = data.judges[state.show_judges[state.selected_judge]];
@@ -117,6 +125,11 @@ function show_delete_modal() {
 
 function show_add_modal() {
     add_judge_modal.modal('show');
+}
+
+function remove_add_model() {
+    $("#add-judge-form").form('clear');
+    $("#add-judges-file").form('clear');
 }
 
 function save_judge() {
@@ -166,6 +179,31 @@ function delete_judge() {
 function add_judge() {
     file_input = document.getElementById('judge-csv');
     if (file_input.value != '') {
+        var judges_data = new FormData();
+        judges_data.append('event', state.selected_event);
+        console.log(document.getElementById('judge-csv').files[0]);
+        judges_data.append('file', document.getElementById('judge-csv').files[0]);
+        
+        $.ajax({
+            type: 'post',
+            url: data.urls.bulk_create,
+            data: judges_data,
+            success: function (result) {
+                if (result.result == 'success') {
+                    data.judges = data.judges.concat(result.judges);
+                    refresh_judges();
+                    update_table();
+                    remove_add_model();
+                    return true;
+                } else {
+                    console.error(result.message);
+                    return false;
+                }
+            },
+            processData: false,
+            contentType: false
+        })
+
 
     } else {
         form = $('#add-judge-form');
@@ -182,6 +220,7 @@ function add_judge() {
                         data.judges.push(result.judge);
                         refresh_judges();
                         update_table();
+                        remove_add_model();
                         return true
                     } else {
                         console.error(result.message);
@@ -219,7 +258,8 @@ function init_page() {
 
     add_judge_modal
         .modal({
-            onApprove: add_judge
+            onApprove: add_judge,
+            onDeny: remove_add_model
         });
 
     event_selector.selectedIndex = -1;

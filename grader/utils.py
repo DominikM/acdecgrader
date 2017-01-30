@@ -7,37 +7,14 @@ import io
 import string
 import random
 
-def create_judges_from_csv(file, event_id):
-    judges = []
-    judge_reader = csv.reader(file.read().decode('utf-8').splitlines())
-    event = Event.objects.get(id=event_id)
-    for row in judge_reader:
-        full_name=row[0]
-        email = row[1]
-        room = row[2]
-        first_name=full_name.split(' ')[0]
-        last_name=full_name.split(' ')[1]
-        username = first_name[0] + last_name
-        password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
-        new_user = User.objects.create_user(
-                        username=username,
-                        password=password,
-                        first_name=first_name,
-                        last_name=last_name,
-                        email=email
-        )
+def get_unique_username(username):
+    num = 1
+    tmp_username = username
+    while User.objects.filter(username=tmp_username).count():
+        tmp_username = username + str(num)
 
-        new_judge = Judge.objects.create(
-            email=email,
-            room=room,
-            event=event,
-            user=new_user)
-
-        judges.append({'name': full_name, 'username':username, 'password':password})
-
-    return judges
-
+    return tmp_username
 
 def export_scores(response, event_id, detailed):
     speech_scores = []

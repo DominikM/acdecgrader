@@ -6,6 +6,7 @@ class Judge(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     room = models.CharField(null=True, max_length=10)
     event = models.ForeignKey('Event', null=True)
+    password = models.CharField(max_length=100)
 
     class Meta:
         verbose_name = 'Judge'
