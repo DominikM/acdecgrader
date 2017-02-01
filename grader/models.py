@@ -139,7 +139,7 @@ class Time(models.Model):
     start = models.TimeField()
 
 
-class Occurence(models.Model):
+class Occurrence(models.Model):
     judge = models.ForeignKey('Judge')
     student = models.ForeignKey('Student')
     type = models.SmallIntegerField(choices=time_types)
