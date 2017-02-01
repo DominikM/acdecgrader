@@ -135,10 +135,12 @@ time_types = (
 
 
 class Time(models.Model):
-    judge = models.ForeignKey('Judge')
-    student = models.ForeignKey('Student')
     event = models.ForeignKey('Event')
     start = models.TimeField()
-    type = models.SmallIntegerField(choices=time_types)
 
+
+class Occurence(models.Model):
+    judge = models.ForeignKey('Judge')
+    student = models.ForeignKey('Student')
+    type = models.SmallIntegerField(choices=time_types)
 
