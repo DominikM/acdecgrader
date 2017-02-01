@@ -128,8 +128,17 @@ class Event(models.Model):
     def __str__(self):
         return self.name
 
+time_types = (
+    (0, 'Speech and Impromptu'),
+    (1, 'Interview')
+)
 
-class Room(models.Model):
-    location = models.CharField(max_length=20)
+
+class Time(models.Model):
+    judge = models.ForeignKey('Judge')
+    student = models.ForeignKey('Student')
+    event = models.ForeignKey('Event')
+    start = models.TimeField()
+    type = models.SmallIntegerField(choices=time_types)
 
 
