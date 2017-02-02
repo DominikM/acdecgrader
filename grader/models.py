@@ -128,11 +128,6 @@ class Event(models.Model):
     def __str__(self):
         return self.name
 
-time_types = (
-    (0, 'Speech and Impromptu'),
-    (1, 'Interview')
-)
-
 
 class Time(models.Model):
     event = models.ForeignKey('Event')
@@ -140,8 +135,15 @@ class Time(models.Model):
     name = models.CharField(max_length=100)
 
 
+time_types = (
+    (0, 'Speech and Impromptu'),
+    (1, 'Interview')
+)
+
+
 class Occurrence(models.Model):
     judge = models.ForeignKey('Judge')
     student = models.ForeignKey('Student')
+    time = models.ForeignKey('Time')
     type = models.SmallIntegerField(choices=time_types)
 
