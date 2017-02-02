@@ -3,7 +3,7 @@
 
 {% block headers %}
     <title>Student Panel</title>
-    <script src="{% static 'js/jquery.form.min.js' %}"></script>
+    <script src="{% static 'js/min/jquery.form.min.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -25,9 +25,10 @@
         <table class="ui celled fixed table">
             <thead>
                 <tr>
+                    <th colspan="1">ID</th>
                     <th colspan="1">First Name</th>
                     <th colspan="1">Last Name</th>
-                    <th colspan="3">Rank</th>
+                    <th colspan="2">Rank</th>
                 </tr>
             </thead>
             <tbody id="student-table">
@@ -62,8 +63,8 @@
                 </div>
                 <div class="two fields">
                     <div class="field">
-                        <label>ID</label>
-                        <input type="number" >
+                        <label for="comp_id">ID</label>
+                        <input name="comp_id" type="number" >
                     </div>
                     <div class="field">
                         <label>Rank</label>
@@ -109,6 +110,7 @@
         selected_student: null, // index of selected student in show_students
     };
     elements = {
+        id_input: null,
         first_name_input: null,
         last_name_input: null,
         rank_select: null,

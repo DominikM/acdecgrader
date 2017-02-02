@@ -36,6 +36,10 @@ function update_table() {
     for (var i=0; i<state.show_students.length; i++) {
         var cur_student = data.students[state.show_students[i]];
 
+        // For ID
+        var student_id = document.createElement('td');
+        student_id.innerHTML = cur_student.comp_id;
+
         // For name
         var student_f_name = document.createElement('td');
         student_f_name.innerHTML = cur_student.first_name;
@@ -58,11 +62,13 @@ function update_table() {
                 student_rank.innerHTML = 'Honors';
                 break;
         }
-        student_rank.colSpan = 3;
+        student_rank.colSpan = 2;
 
         document.getElementsByTagName('table')[0].className = "ui celled fixed selectable table";
 
         var row = document.createElement('tr');
+
+        row.appendChild(student_id);
         row.appendChild(student_f_name);
         row.appendChild(student_l_name);
         row.appendChild(student_rank);
@@ -93,20 +99,27 @@ function edit_row(student) {
             cells[i].innerHTML = "";
 
         var sel_student = data.students[state.show_students[state.selected_student]];
+            
+        elements.id_input = cells[0]
+            .appendChild(document.createElement('div'))
+            .appendChild(document.createElement('input'));
 
-        elements.first_name_input = cells[0]
+        elements.id_input.type = 'number';
+        elements.id_input.value = sel_student.comp_id;
+        
+        elements.first_name_input = cells[1]
             .appendChild(document.createElement('div'))
             .appendChild(document.createElement('input'));
 
         elements.first_name_input.value = sel_student.first_name;
 
-        elements.last_name_input = cells[1]
+        elements.last_name_input = cells[2]
             .appendChild(document.createElement('div'))
             .appendChild(document.createElement('input'));
 
         elements.last_name_input.value = sel_student.last_name;
 
-        elements.rank_select = cells[2]
+        elements.rank_select = cells[3]
             .appendChild(document.createElement('select'));
 
         var ranks = ['Varsity', 'Scholastic', 'Honors'];
@@ -120,10 +133,11 @@ function edit_row(student) {
         elements.rank_select.selectedIndex = sel_student.rank;
 
         var input_divs = selected_row.getElementsByTagName('div');
-        input_divs[0].className = 'ui input'; // first name
-        input_divs[1].className = 'ui input'; // last name
+        input_divs[0].className = 'ui input'; // id
+        input_divs[1].className = 'ui input'; // first name
+        input_divs[2].className = 'ui input'; // last name
         $(elements.rank_select).dropdown();
-        cells[2].style.overflow = 'visible';
+        cells[3].style.overflow = 'visible';
 
         // now let's add the buttons to the left of the row
 
@@ -156,6 +170,7 @@ function show_add_modal() {
 function save_student() {
     // TODO: save request
     var student = data.students[state.show_students[state.selected_student]];
+    var n_comp_id = elements.id_input.value;
     var n_first_name = elements.first_name_input.value;
     var n_last_name = elements.last_name_input.value;
     var n_rank = parseInt(elements.rank_select.value);
@@ -163,6 +178,7 @@ function save_student() {
         data.urls.edit,
         {
             id: student.id,
+            comp_id: n_comp_id,
             first_name: n_first_name,
             last_name: n_last_name,
             rank: n_rank
@@ -171,6 +187,7 @@ function save_student() {
             if (result.result == 'fail') {
                 console.error(result.message);
             } else if (result.result == 'success') {
+                student.comp_id = n_comp_id;
                 student.first_name = n_first_name;
                 student.last_name = n_last_name;
                 student.rank = n_rank;

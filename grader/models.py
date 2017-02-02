@@ -23,6 +23,7 @@ rank = (
 
 
 class Student(models.Model):
+    comp_id = models.IntegerField()
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     event = models.ForeignKey('Event')

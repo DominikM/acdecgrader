@@ -162,6 +162,7 @@ def student_panel_view(request):
         for _student in students:
             student_dict = {
                 'id': _student.id,
+                'comp_id': _student.comp_id,
                 'event_id': _student.event.id,
                 'first_name': _student.first_name,
                 'last_name': _student.last_name,
@@ -230,12 +231,15 @@ def student_edit(request):
         if not (request.POST.get('first_name') or
                 request.POST.get('last_name') or
                 request.POST.get('rank') or
-                request.POST.get('event')):
+                request.POST.get('event') or
+                request.POST.get('comp_id')):
             return JsonResponse({
                 'result': 'fail',
                 'message': 'Must supply an attribute to edit'
             })
 
+        if request.POST.get('comp_id'):
+            student.comp_id = int(request.POST['comp_id'])
         if request.POST.get('first_name'):
             student.first_name = request.POST['first_name']
         if request.POST.get('last_name'):
@@ -265,6 +269,10 @@ def student_create(request):
         new_student = Student()
 
         error = ""
+        if request.POST.get('comp_id'):
+            new_student.comp_id = int(request.POST['comp_id'])
+        else:
+            error += 'Must supply an ID. '
 
         if request.POST.get("first_name"):
             new_student.first_name = request.POST['first_name']
@@ -297,6 +305,7 @@ def student_create(request):
                 'result': 'success',
                 'student': {
                     'id': new_student.id,
+                    'comp_id': new_student.comp_id,
                     'first_name': new_student.first_name,
                     'last_name': new_student.last_name,
                     'rank': new_student.rank,
@@ -306,6 +315,46 @@ def student_create(request):
 
         else:
             return JsonResponse({'result': 'fail', 'message': error})
+
+
+def students_create(request):
+    if request.method == 'POST' and request.user.is_superuser:
+        event_id = request.POST['event']
+        student_reader = csv.reader(request.FILES['file'].read().decode('utf-8').splitlines())
+        try:
+            event = Event.objects.get(id=event_id)
+        except Event.DoesNotExist:
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Event does not exist'
+            })
+
+        students = []
+        for row in student_reader:
+            student_id = row[0]
+            full_name = row[1]
+            first_name = full_name.split(' ')[0]
+            last_name = full_name.split(' ')[1]
+
+            new_student = Student.create(
+                comp_id=int(student_id),
+                first_name=first_name,
+                last_name=last_name
+            )
+
+            students.append({
+                'id': new_student.id,
+                'comp_id': student_id,
+                'first_name': first_name,
+                'last_name': last_name,
+                'event_id': event.id,
+            })
+
+
+        return JsonResponse({
+            'result': 'success',
+            'students': students
+        })
 
 
 def judge_panel_view(request):
@@ -440,7 +489,6 @@ def judges_create(request):
 
         judges = []
         for row in judge_reader:
-            print(row)
             full_name = row[0]
             email = row[1]
             room = row[2]
