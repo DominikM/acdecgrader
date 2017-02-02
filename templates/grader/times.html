@@ -14,6 +14,12 @@
             <p>Choose an event: </p>
             <select class="ui dropdown" id="event-select" onchange="change_event()"></select>
         </div>
+        <div class="add-person">
+            <p style="height: 1.5em; line-height: 1.5em">
+                Add Time
+                <i class="add square green link big icon" onclick="show_add_modal()"></i>
+            </p>
+        </div>
     </div>
 
     <div class="table-container">
@@ -32,6 +38,29 @@
         </table>
     </div>
 
+    <div id="add-modal" class="ui modal">
+        <div class="header">Add Time</div>
+        <div class="content">
+            <form id="add-time-form" class="ui form" action="{% url 'time_create' %}">
+                <div class="two fields">
+                    <div class="field">
+                        <label>Name</label>
+                        <input type="text" name="name" placeholder="Name" required>
+                    </div>
+                    <div class="field">
+                        <label>Time</label>
+                        <input type="time" name="start" required>
+                    </div>
+                </div>
+                <input type="hidden" name="event">
+            </form>
+        </div>
+        <div class="actions">
+            <div class="ui positive button">Create</div>
+            <div class="ui negative button">Nevermind</div>
+        </div>
+    </div>
+
     <div id="icons">
         <i class="large green checkmark box link icon"></i>
         <i class="large red remove circle link icon"></i>
@@ -44,7 +73,9 @@
             times_tab: $('#table-body'),
             icons: $('#icons'),
             name_input: null,
-            time_input: null
+            time_input: null,
+            add_modal: $('#add-modal'),
+            add_form: $('#add-time-form')
         };
         var state = {
             selected_event: null,
@@ -55,6 +86,7 @@
 
         function change_event() {
             state.selected_event = parseInt(ele.event_sel.val());
+            $('.add-person').css('visibility', 'visible');
             refresh_times();
         }
 
@@ -172,6 +204,30 @@
             }
         }
 
+        function add_time() {
+            if (ele.add_form[0].checkValidity()) {
+                $("input[name='event']").val(state.selected_event);
+                ele.add_form.ajaxSubmit({
+                    url: data.urls.create,
+                    type:'post',
+                    success: function(result) {
+                        if (result.result == 'success') {
+                            data.times.push(result.time);
+                            refresh_times();
+                            return true;
+                        } else {
+                            console.error(result.message);
+                            return false;
+                        }
+                    }
+                });
+            } else {
+                ele.add_form.find('field').addClass('error');
+                return false;
+            }
+        }
+
+
         function init() {
             // First load events into the dropdown
             $.each(data.events, function(i, event) {
@@ -188,7 +244,13 @@
             icons.eq(1).click(delete_time);
             icons.eq(2).click(unedit_row);
 
+            ele.add_modal.modal({
+                onApprove: add_time
+            });
+        }
 
+        function show_add_modal() {
+            ele.add_modal.modal('show');
         }
 
         $(document).ready(init);

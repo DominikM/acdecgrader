@@ -537,7 +537,7 @@ def times_panel_view(request):
         event_dicts = []
         time_dicts = []
         events = Event.objects.all()
-        times = Time.objects.all()
+        times = Time.objects.all().order_by('start')
 
         for _event in events:
             event_dict = {
@@ -654,3 +654,45 @@ def time_edit(request):
                 'name': edit_time.name
             }
         })
+
+def time_create(request):
+    if request.user.is_superuser and request.method == 'POST':
+        new_time = Time()
+
+        error = ""
+
+        if request.POST.get("name"):
+            new_time.name = request.POST['name']
+        else:
+            error += 'Must supply a name. '
+
+        if request.POST.get("start"):
+            new_time.start = datetime.strptime(request.POST['start'], '%H:%M').time()
+        else:
+            error += 'Must supply a start time. '
+
+        if request.POST.get('event'):
+            try:
+                n_event = Event.objects.get(id=int(request.POST['event']))
+                new_time.event = n_event
+            except Event.DoesNotExist:
+                error += 'Not a valid event id. '
+
+        else:
+            error += 'Must supply an event id. '
+
+        if error == "":
+            new_time.save()
+            return JsonResponse({
+                'result': 'success',
+                'time': {
+                    'id': new_time.id,
+                    'name': new_time.name,
+                    'event': new_time.event.id,
+                    'start': new_time.start.isoformat(),
+                    'display_start': new_time.start.strftime('%I:%M %p')
+                }
+            })
+
+        else:
+            return JsonResponse({'result': 'fail', 'message': error})
