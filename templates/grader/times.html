@@ -32,19 +32,31 @@
         </table>
     </div>
 
+    <div id="icons">
+        <i class="large green checkmark box link icon"></i>
+        <i class="large red remove circle link icon"></i>
+        <i class="large minus square link icon" ></i>
+    </div>
+
     <script>
         var ele = {
             event_sel: $('#event-select'),
-            times_tab: $('#table-body')
+            times_tab: $('#table-body'),
+            icons: $('#icons')
         };
         var state = {
             selected_event: null,
-            show_times: null
+            show_times: null,
+            selected_time: null
         };
         var data = {{ data | safe }};
 
         function change_event() {
             state.selected_event = parseInt(ele.event_sel.val());
+            refresh_times();
+        }
+
+        function refresh_times() {
             state.show_times = [];
             $.each(data.times, function(i, time) {
                 if (time.event == state.selected_event) {
@@ -59,12 +71,76 @@
             $.each(state.show_times, function(i, time_i) {
                 var time = data.times[time_i];
                 ele.times_tab.append(
-                        $('<tr>').append(
-                                $('<td>').text(time.name),
-                                $('<td>').text(time.start)
-                        )
+                        $('<tr>')
+                                .click(i, edit_row)
+                                .append(
+                                    $('<td>').text(time.name),
+                                    $('<td>').text(time.start)
+                                )
                 );
             })
+        }
+
+        function edit_row(event) {
+            if (state.selected_time == null) {
+                var cells = ele.times_tab.children('tr').eq(event.data).children('td');
+                state.selected_time = state.show_times[event.data];
+                var time_data = data.times[state.selected_time];
+
+                cells.empty();
+                cells.eq(0)
+                    .append($('<div>')
+                            .addClass('ui input')
+                            .append($('<input>')
+                                .attr('name', 'name')
+                                .val(time_data.name)));
+                cells.eq(1)
+                    .append($('<div>')
+                        .addClass('ui input')
+                        .append($('<input>')
+                                .attr('name', 'time')
+                                .attr('type', 'time')
+                                .val(time_data.start)));
+
+                console.log(cells.eq(0).offset());
+                var offset = cells.eq(0).offset();
+                var height = cells.eq(0).height()/2;
+                var width = ele.icons.width();
+                ele.icons.css({
+                    visibility: 'visible',
+                    top: offset.top + height ,
+                    left: offset.left - width
+                })
+            }
+        }
+
+        function unedit_row(reload) {
+            state.selected_time = null;
+            ele.icons.css("visibility", "hidden");
+            if (reload) {
+                refresh_times();
+            } else {
+                refresh_table();
+            }
+        }
+
+        function delete_time() {
+            if (state.selected_time != null) {
+                var to_delete = data.times[state.selected_time].id;
+                console.log(to_delete);
+                $.post(
+                        data.urls.delete,
+                        {'id': to_delete},
+                        function (result) {
+                            if (result.result == 'success') {
+                                data.times.splice(state.selected_time, 1);
+                                unedit_row(true);
+                            } else {
+                                console.error(result.message);
+                            }
+                        }
+                )
+            }
         }
 
         function init() {
@@ -77,6 +153,12 @@
             });
             ele.event_sel[0].selectedIndex = -1;
             ele.event_sel.dropdown();
+
+            var icons = ele.icons.children();
+            icons.eq(0).click();
+            icons.eq(1).click(delete_time);
+            icons.eq(2).click(unedit_row);
+
 
         }
 

@@ -551,6 +551,7 @@ def times_panel_view(request):
 
         for _time in times:
             time_dict = {
+                'id': _time.id,
                 'event': _time.event.id,
                 'start': _time.start.isoformat(),
                 'name': _time.name
@@ -558,22 +559,45 @@ def times_panel_view(request):
 
             time_dicts.append(time_dict)
 
-        """
+
         urls = {
-            'delete': reverse('judge_delete'),
-            'edit': reverse('judge_edit'),
-            'create': reverse('judge_create'),
-            'bulk_create': reverse('judges_create')
+            'delete': reverse('time_delete'),
+            #'edit': reverse('judge_edit'),
+            #'create': reverse('judge_create'),
+            #'bulk_create': reverse('judges_create')
         }
-        """
+
 
         data = {
             'events': event_dicts,
             'times': time_dicts,
-            #'urls': urls
+            'urls': urls
         }
 
         return render(request, 'grader/times.html', context={'data': data})
 
     else:
         return redirect(reverse('index'))
+
+
+def time_delete(request):
+    if request.user.is_superuser and request.method == 'POST':
+        if not request.POST.get('id'):
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Must provide ID in post request'
+            })
+
+        try:
+            to_delete = Time.objects.get(id=request.POST['id'])
+        except Time.DoesNotExist:
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Time does not exist'
+            })
+
+        to_delete.delete()
+        return JsonResponse({
+            'result': 'success',
+            'message': 'Deletion succeeded'
+        })
