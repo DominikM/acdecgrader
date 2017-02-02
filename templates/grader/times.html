@@ -42,7 +42,9 @@
         var ele = {
             event_sel: $('#event-select'),
             times_tab: $('#table-body'),
-            icons: $('#icons')
+            icons: $('#icons'),
+            name_input: null,
+            time_input: null
         };
         var state = {
             selected_event: null,
@@ -75,7 +77,7 @@
                                 .click(i, edit_row)
                                 .append(
                                     $('<td>').text(time.name),
-                                    $('<td>').text(time.start)
+                                    $('<td>').text(time.display_start)
                                 )
                 );
             })
@@ -87,20 +89,24 @@
                 state.selected_time = state.show_times[event.data];
                 var time_data = data.times[state.selected_time];
 
+                ele.name_input = $('<input>')
+                                    .attr('name', 'name')
+                                    .val(time_data.name);
+
+                ele.time_input = $('<input>')
+                                    .attr('name', 'time')
+                                    .attr('type', 'time')
+                                    .val(time_data.start);
+
                 cells.empty();
                 cells.eq(0)
                     .append($('<div>')
                             .addClass('ui input')
-                            .append($('<input>')
-                                .attr('name', 'name')
-                                .val(time_data.name)));
+                            .append(ele.name_input));
                 cells.eq(1)
                     .append($('<div>')
                         .addClass('ui input')
-                        .append($('<input>')
-                                .attr('name', 'time')
-                                .attr('type', 'time')
-                                .val(time_data.start)));
+                        .append(ele.time_input));
 
                 console.log(cells.eq(0).offset());
                 var offset = cells.eq(0).offset();
@@ -143,6 +149,29 @@
             }
         }
 
+        function edit_time() {
+            if (state.selected_time != null) {
+                var to_edit = data.times[state.selected_time];
+                $.post(
+                        data.urls.edit,
+                        {
+                            'id': to_edit.id,
+                            'name': ele.name_input.val(),
+                            'start': ele.time_input.val()
+
+                        },
+                        function (result) {
+                            if (result.result == 'success') {
+                                data.times[state.selected_time] = result.time;
+                                unedit_row(true);
+                            } else {
+                                console.error(result.message);
+                            }
+                        }
+                )
+            }
+        }
+
         function init() {
             // First load events into the dropdown
             $.each(data.events, function(i, event) {
@@ -155,7 +184,7 @@
             ele.event_sel.dropdown();
 
             var icons = ele.icons.children();
-            icons.eq(0).click();
+            icons.eq(0).click(edit_time);
             icons.eq(1).click(delete_time);
             icons.eq(2).click(unedit_row);
 

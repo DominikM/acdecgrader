@@ -39,6 +39,7 @@ urlpatterns = [
     # url(r'^find_student/$', views.find_student, name="find_student")
 
     url(r'^times/$', views.times_panel_view, name='times_panel'),
-    url(r'^times/delete/$', views.time_delete, name='time_delete')
+    url(r'^times/delete/$', views.time_delete, name='time_delete'),
+    url(r'^times/edit/$', views.time_edit, name='time_edit'),
 
 ]

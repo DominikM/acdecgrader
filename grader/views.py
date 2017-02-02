@@ -9,7 +9,7 @@ import string
 import csv
 from .utils import export_scores, get_unique_username
 from .models import Event, Judge, Student, Time
-from datetime import date
+from datetime import datetime
 import json
 # Create your views here.
 
@@ -553,7 +553,8 @@ def times_panel_view(request):
             time_dict = {
                 'id': _time.id,
                 'event': _time.event.id,
-                'start': _time.start.isoformat(),
+                'start': _time.start.strftime('%H:%M'),
+                'display_start': _time.start.strftime('%I:%M %p'),
                 'name': _time.name
             }
 
@@ -562,7 +563,7 @@ def times_panel_view(request):
 
         urls = {
             'delete': reverse('time_delete'),
-            #'edit': reverse('judge_edit'),
+            'edit': reverse('time_edit'),
             #'create': reverse('judge_create'),
             #'bulk_create': reverse('judges_create')
         }
@@ -600,4 +601,56 @@ def time_delete(request):
         return JsonResponse({
             'result': 'success',
             'message': 'Deletion succeeded'
+        })
+
+
+def time_edit(request):
+    if request.user.is_superuser and request.method == 'POST':
+        if not request.POST.get('id'):
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Must provide ID in post request'
+            })
+
+        try:
+            edit_time = Time.objects.get(id=request.POST['id'])
+        except Time.DoesNotExist:
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Time does not exist'
+            })
+
+        if not (request.POST.get('name') or
+                request.POST.get('start')):
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Must supply an attribute to edit'
+            })
+
+        if request.POST.get('name'):
+            edit_time.name = request.POST['name']
+        if request.POST.get('start'):
+            edit_time.start = datetime.strptime(request.POST['start'], '%H:%M').time()
+        if request.POST.get('event'):
+            try:
+                new_event = Event.objects.get(id=request.POST['event'])
+            except Event.DoesNotExist:
+                return JsonResponse({
+                    'result': 'fail',
+                    'message': 'Event does not exist'
+                })
+
+            edit_time.event = new_event
+
+        edit_time.save()
+        return JsonResponse({
+            'result': 'success',
+            'message': 'Edit succeeded',
+            'time': {
+                'id': edit_time.id,
+                'event': edit_time.event.id,
+                'start': edit_time.start.isoformat(),
+                'display_start': edit_time.start.strftime('%I:%M %p'),
+                'name': edit_time.name
+            }
         })
