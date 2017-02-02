@@ -245,7 +245,10 @@
             icons.eq(2).click(unedit_row);
 
             ele.add_modal.modal({
-                onApprove: add_time
+                onApprove: add_time,
+                onHidden: function() {
+                    ele.add_form[0].reset();
+                }
             });
         }
 
