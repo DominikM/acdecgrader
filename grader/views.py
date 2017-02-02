@@ -8,7 +8,7 @@ import random
 import string
 import csv
 from .utils import export_scores, get_unique_username
-from .models import Event, Judge, Student
+from .models import Event, Judge, Student, Time
 from datetime import date
 import json
 # Create your views here.
@@ -530,3 +530,50 @@ def judge_create(request):
 
         else:
             return JsonResponse({'result': 'fail', 'message': error})
+
+
+def times_panel_view(request):
+    if request.user.is_superuser:
+        event_dicts = []
+        time_dicts = []
+        events = Event.objects.all()
+        times = Time.objects.all()
+
+        for _event in events:
+            event_dict = {
+                'id': _event.id,
+                'name': _event.name,
+                'date': _event.date.strftime('%Y-%m-%d'),
+                'location': _event.location
+            }
+
+            event_dicts.append(event_dict)
+
+        for _time in times:
+            time_dict = {
+                'event': _time.event.id,
+                'start': _time.start.isoformat(),
+                'name': _time.name
+            }
+
+            time_dicts.append(time_dict)
+
+        """
+        urls = {
+            'delete': reverse('judge_delete'),
+            'edit': reverse('judge_edit'),
+            'create': reverse('judge_create'),
+            'bulk_create': reverse('judges_create')
+        }
+        """
+
+        data = {
+            'events': event_dicts,
+            'times': time_dicts,
+            #'urls': urls
+        }
+
+        return render(request, 'grader/times.html', context={'data': data})
+
+    else:
+        return redirect(reverse('index'))

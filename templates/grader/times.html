@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block headers %}
+    <title>Times</title>
+    <script src="{% static 'js/min/jquery.form.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <h1>Times</h1>
+
+    <div id="controls">
+        <div>
+            <p>Choose an event: </p>
+            <select class="ui dropdown" id="event-select" onchange="change_event()"></select>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table id="times" class="ui selectable fixed celled table">
+            <thead>
+                <tr>
+                    <th >Name</th>
+                    <th >Time</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <tr>
+                    <td colspan="2">Select event to view and change times</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        var ele = {
+            event_sel: $('#event-select'),
+            times_tab: $('#table-body')
+        };
+        var state = {
+            selected_event: null,
+            show_times: null
+        };
+        var data = {{ data | safe }};
+
+        function change_event() {
+            state.selected_event = parseInt(ele.event_sel.val());
+            state.show_times = [];
+            $.each(data.times, function(i, time) {
+                if (time.event == state.selected_event) {
+                    state.show_times.push(i);
+                }
+            });
+            refresh_table();
+        }
+
+        function refresh_table() {
+            ele.times_tab.empty();
+            $.each(state.show_times, function(i, time_i) {
+                var time = data.times[time_i];
+                ele.times_tab.append(
+                        $('<tr>').append(
+                                $('<td>').text(time.name),
+                                $('<td>').text(time.start)
+                        )
+                );
+            })
+        }
+
+        function init() {
+            // First load events into the dropdown
+            $.each(data.events, function(i, event) {
+                ele.event_sel.append($('<option>', {
+                    value: event.id,
+                    text: event.name
+                }))
+            });
+            ele.event_sel[0].selectedIndex = -1;
+            ele.event_sel.dropdown();
+
+        }
+
+        $(document).ready(init);
+    </script>
+
+{% endblock %}

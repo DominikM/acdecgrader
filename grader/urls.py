@@ -35,7 +35,9 @@ urlpatterns = [
     url(r'^judges/delete/$', views.judge_delete, name="judge_delete"),
     url(r'^judges/edit/$', views.judge_edit, name="judge_edit"),
     url(r'^judges/create/$', views.judge_create, name="judge_create"),
-    url(r'^judges/bulk_create/$', views.judges_create, name="judges_create")
+    url(r'^judges/bulk_create/$', views.judges_create, name="judges_create"),
     # url(r'^find_student/$', views.find_student, name="find_student")
+
+    url(r'^times/$', views.times_panel_view, name='times_panel')
 
 ]

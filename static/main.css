@@ -20,12 +20,13 @@ body {
     margin: auto;
 }
 
-.person-table-container {
+.person-table-container, .table-container {
     margin: auto;
     margin-top: 20px;
     width: 70%;
     min-width: 500px;
 }
+
 
 #icons {
     visibility: hidden;

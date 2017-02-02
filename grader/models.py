@@ -137,6 +137,7 @@ time_types = (
 class Time(models.Model):
     event = models.ForeignKey('Event')
     start = models.TimeField()
+    name = models.CharField(max_length=100)
 
 
 class Occurrence(models.Model):
