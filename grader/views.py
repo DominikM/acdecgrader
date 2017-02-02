@@ -8,7 +8,7 @@ import random
 import string
 import csv
 from .utils import export_scores, get_unique_username
-from .models import Event, Judge, Student, Time
+from .models import Event, Judge, Student, Time, Occurrence
 from datetime import datetime
 import json
 # Create your views here.
@@ -655,6 +655,7 @@ def time_edit(request):
             }
         })
 
+
 def time_create(request):
     if request.user.is_superuser and request.method == 'POST':
         new_time = Time()
@@ -696,3 +697,68 @@ def time_create(request):
 
         else:
             return JsonResponse({'result': 'fail', 'message': error})
+
+
+def assignments_view(request):
+    if request.user.is_superuser:
+        events = Event.objects.all()
+        event_dicts = []
+        for event in events:
+            event_dicts.append({
+                'id': event.id,
+                'name': event.name,
+                'date': event.date.isoformat(),
+                'location': event.location
+            })
+
+        judges = Judge.objects.all()
+        judge_dicts = []
+        for judge in judges:
+            judge_dicts.append({
+                'first_name': judge.user.first_name,
+                'last_name': judge.user.last_name,
+                'room': judge.room,
+                'event': judge.event.id,
+            })
+
+        students = Student.objects.all()
+        student_dicts = []
+        for student in students:
+            student_dicts.append({
+                'first_name': student.first_name,
+                'last_name': student.last_name,
+                'event': student.event.id,
+                'rank': student.rank
+            })
+
+        times = Time.objects.all()
+        time_dicts = []
+        for time in times:
+            time_dicts.append({
+                'event': time.event.id,
+                'start': time.start.isoformat(),
+                'display_start': time.start.strftime('%I:%M %p'),
+            })
+
+        occurrences = Occurrence.objects.all()
+        occurrence_dicts = []
+        for occ in occurrences:
+            occurrence_dicts.append({
+                'judge': occ.judge.id,
+                'student': occ.student.id,
+                'time': occ.time.id,
+                'type': occ.type
+            })
+
+        urls = {}
+
+        data = {
+            'events': event_dicts,
+            'judges': judge_dicts,
+            'students': student_dicts,
+            'times': time_dicts,
+            'occurrences': occurrence_dicts,
+            'urls': urls
+        }
+
+        return render(request, 'grader/time_assignments.html', context={'data': data})

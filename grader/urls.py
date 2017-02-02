@@ -41,6 +41,8 @@ urlpatterns = [
     url(r'^times/$', views.times_panel_view, name='times_panel'),
     url(r'^times/delete/$', views.time_delete, name='time_delete'),
     url(r'^times/edit/$', views.time_edit, name='time_edit'),
-    url(r'^times/create/$', views.time_create, name='time_create')
+    url(r'^times/create/$', views.time_create, name='time_create'),
+
+    url(r'^assignments/$', views.assignments_view, name='assignments_view')
 
 ]

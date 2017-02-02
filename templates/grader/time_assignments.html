@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block headers %}
+    <title>Times</title>
+    <script src="{% static 'js/min/jquery.form.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <h1>Times Assignments</h1>
+
+    <div id="controls">
+        <div class="ui two column relaxed grid">
+            <div class="column">
+                <p>Choose an event: </p>
+                <select class="ui dropdown" id="event-select" onchange="change_event()"></select>
+            </div>
+            <div class="column">
+                <p>Choose Judge: </p>
+                <select class="ui dropdown" id="judge-select" onchange="change_judge()"></select>
+            </div>
+        </div>
+        <div class="add-person">
+            <p style="height: 1.5em; line-height: 1.5em; display: inline-block">
+                Add Time
+                <i class="add square green link big icon" onclick="show_add_modal()"></i>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        var data = {{ data | safe }};
+        var ele = {
+            event_sel: $('#event-select'),
+            judge_sel: $('#judge-select')
+        };
+
+        function init(){
+            ele.event_sel.dropdown();
+            ele.judge_sel.dropdown();
+        }
+
+        $(document).ready(init);
+    </script>
+
+{% endblock %}
