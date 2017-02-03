@@ -34,8 +34,35 @@
             event_sel: $('#event-select'),
             judge_sel: $('#judge-select')
         };
+        var state = {
+            selected_event: null,
+            selected_judge: null
+        };
+
+        function change_event() {
+            state.selected_event = parseInt(ele.event_sel.val());
+            $.each(data.judges, function(i, judge) {
+                if (judge.event === state.selected_event) {
+                    console.log(judge);
+                    ele.judge_sel
+                            .append($("<option>")
+                                    .attr('value', judge.id)
+                                    .text(judge.first_name + ' ' + judge.last_name));
+                }
+            });
+        }
 
         function init(){
+            $.each(data.events, function(i, event) {
+                ele.event_sel
+                        .append($("<option>")
+                                .attr('value', event.id)
+                                .text(event.name)
+                        )
+            });
+
+            ele.event_sel[0].selectedIndex = -1;
+
             ele.event_sel.dropdown();
             ele.judge_sel.dropdown();
         }

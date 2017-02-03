@@ -623,7 +623,7 @@ def times_panel_view(request):
             'urls': urls
         }
 
-        return render(request, 'grader/times.html', context={'data': data})
+        return render(request, 'grader/times.html', context={'data': json.dumps(data)})
 
     else:
         return redirect(reverse('index'))
@@ -809,4 +809,4 @@ def assignments_view(request):
             'urls': urls
         }
 
-        return render(request, 'grader/time_assignments.html', context={'data': data})
+        return render(request, 'grader/time_assignments.html', context={'data': json.dumps(data)})
