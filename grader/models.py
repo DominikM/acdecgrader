@@ -148,4 +148,5 @@ class Occurrence(models.Model):
     # time = models.ForeignKey('Time')
     time = models.TimeField()
     type = models.SmallIntegerField(choices=time_types)
+    event = models.ForeignKey('Event')
 

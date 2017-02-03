@@ -628,7 +628,7 @@ def times_panel_view(request):
     else:
         return redirect(reverse('index'))
 
-
+"""
 def time_delete(request):
     if request.user.is_superuser and request.method == 'POST':
         if not request.POST.get('id'):
@@ -745,6 +745,7 @@ def time_create(request):
 
         else:
             return JsonResponse({'result': 'fail', 'message': error})
+"""
 
 
 def assignments_view(request):
@@ -763,6 +764,7 @@ def assignments_view(request):
         judge_dicts = []
         for judge in judges:
             judge_dicts.append({
+                'id': judge.id,
                 'first_name': judge.user.first_name,
                 'last_name': judge.user.last_name,
                 'room': judge.room,
@@ -773,12 +775,13 @@ def assignments_view(request):
         student_dicts = []
         for student in students:
             student_dicts.append({
+                'id': student.id,
                 'first_name': student.first_name,
                 'last_name': student.last_name,
                 'event': student.event.id,
                 'rank': student.rank
             })
-
+        """
         times = Time.objects.all()
         time_dicts = []
         for time in times:
@@ -787,26 +790,177 @@ def assignments_view(request):
                 'start': time.start.isoformat(),
                 'display_start': time.start.strftime('%I:%M %p'),
             })
+        """
 
-        occurrences = Occurrence.objects.all()
+        occurrences = Occurrence.objects.all().order_by('time')
         occurrence_dicts = []
         for occ in occurrences:
             occurrence_dicts.append({
+                'id': occ.id,
                 'judge': occ.judge.id,
                 'student': occ.student.id,
-                'time': occ.time.id,
-                'type': occ.type
+                'time': occ.time.strftime('%H:%M'),
+                'display_time': occ.time.strftime('%I:%M %p'),
+                # 'display_start': occ.time.start.strftime('%I:%M %p'),
+                'student_name': occ.student.first_name + ' ' + occ.student.last_name,
+                'type': occ.type,
             })
 
-        urls = {}
+        urls = {
+            'create': reverse('assignment_create'),
+            'edit': reverse('assignment_edit'),
+            'delete': reverse('assignment_delete')
+        }
 
         data = {
             'events': event_dicts,
             'judges': judge_dicts,
             'students': student_dicts,
-            'times': time_dicts,
+            # 'times': time_dicts,
             'occurrences': occurrence_dicts,
             'urls': urls
         }
 
         return render(request, 'grader/time_assignments.html', context={'data': json.dumps(data)})
+
+
+def assignment_create(request):
+    if request.user.is_superuser and request.method == 'POST':
+        new_occ = Occurrence()
+
+        error = ""
+
+        if request.POST.get("time"):
+            new_occ.time = datetime.strptime(request.POST['time'], '%H:%M').time()
+        else:
+            error += 'Must supply a time. '
+
+        if request.POST.get("judge"):
+            try:
+                n_judge = Judge.objects.get(id=int(request.POST['judge']))
+                new_occ.judge = n_judge
+            except Judge.DoesNotExist:
+                error += 'Not a valid judge id. '
+        else:
+            error += 'Must supply a judge. '
+
+        if request.POST.get('student'):
+            try:
+                n_student = Student.objects.get(id=int(request.POST['student']))
+                new_occ.student = n_student
+            except Student.DoesNotExist:
+                error += 'Not a valid student id. '
+        else:
+            error += 'Must supply a student. '
+
+        if request.POST.get('event'):
+            try:
+                n_event = Event.objects.get(id=int(request.POST['event']))
+                new_occ.event = n_event
+            except Event.DoesNotExist:
+                error += 'Not a valid event id. '
+
+        else:
+            error += 'Must supply an event id. '
+
+        if request.POST.get('type'):
+            new_occ.type = int(request.POST['type'])
+        else:
+            error += 'Must supply a type. '
+
+        if error == "":
+            new_occ.save()
+            return JsonResponse({
+                'result': 'success',
+                'occurrence': {
+                    'judge': new_occ.judge.id,
+                    'student': new_occ.student.id,
+                    'time': new_occ.time.isoformat(),
+                    'display_time': new_occ.time.strftime('%I:%M %p'),
+                    # 'display_start': occ.time.start.strftime('%I:%M %p'),
+                    'student_name': new_occ.student.first_name + ' ' + new_occ.student.last_name,
+                    'type': new_occ.type,
+                }
+            })
+
+        else:
+            return JsonResponse({'result': 'fail', 'message': error})
+
+
+def assignment_edit(request):
+    if request.user.is_superuser and request.method == 'POST':
+        if not request.POST.get('id'):
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Must provide ID in post request'
+            })
+
+        try:
+            occurrence = Occurrence.objects.get(id=request.POST['id'])
+        except Student.DoesNotExist:
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Occurrence does not exist'
+            })
+
+        if not (request.POST.get('time') or
+                request.POST.get('student') or
+                request.POST.get('type')):
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Must supply an attribute to edit'
+            })
+
+        if request.POST.get('time'):
+            occurrence.time = datetime.strptime(request.POST['time'], '%H:%M').time()
+        if request.POST.get('type'):
+            occurrence.type = int(request.POST['type'])
+        if request.POST.get('student'):
+            try:
+                new_student = Student.objects.get(id=request.POST['student'])
+            except Student.DoesNotExist:
+                return JsonResponse({
+                    'result': 'fail',
+                    'message': 'Student does not exist'
+                })
+
+            occurrence.student = new_student
+
+        occurrence.save()
+        return JsonResponse({
+            'result': 'success',
+            'message': 'Edit succeeded',
+            'occurrence': {
+                'id': occurrence.id,
+                'judge': occurrence.judge.id,
+                'student': occurrence.student.id,
+                'time': occurrence.time.isoformat(),
+                'display_time': occurrence.time.strftime('%I:%M %p'),
+                # 'display_start': occ.time.start.strftime('%I:%M %p'),
+                'student_name': occurrence.student.first_name + ' ' + occurrence.student.last_name,
+                'type': occurrence.type,
+            }
+        })
+
+
+def assignment_delete(request):
+    if request.user.is_superuser and request.method == 'POST':
+        if not request.POST.get('id'):
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Must provide ID in post request'
+            })
+
+        try:
+            to_delete = Occurrence.objects.get(id=request.POST['id'])
+        except Occurrence.DoesNotExist:
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Occurrence does not exist'
+            })
+
+        to_delete.delete()
+        return JsonResponse({
+            'result': 'success',
+            'message': 'Deletion succeeded'
+        })

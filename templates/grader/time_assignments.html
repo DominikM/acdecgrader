@@ -22,25 +22,92 @@
         </div>
         <div class="add-person">
             <p style="height: 1.5em; line-height: 1.5em; display: inline-block">
-                Add Time
+                Add Occurrence
                 <i class="add square green link big icon" onclick="show_add_modal()"></i>
             </p>
         </div>
+    </div>
+
+    <div class="person-table-container">
+        <table class="ui selectable celled fixed table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Student</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody id="assign-table">
+                <tr>
+                    <td colspan="3">Select an event and judge to view assignments </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="add-modal" class="ui modal">
+        <div class="header">Add Occurrence(s)</div>
+        <div class="content">
+            <form id="add-form" class="ui form" action="{% url 'assignment_create' %}">
+                <div class="three fields">
+                    <div class="field">
+                        <label>Time</label>
+                        <input type="time" name="time" required>
+                    </div>
+                    <div class="field">
+                        <label>Student</label>
+                        <select class="ui search dropdown" name="student" id="student-sel"></select>
+                    </div>
+                    <div class="field">
+                        <label>Type</label>
+                        <select class="ui dropdown" name="type">
+                            <option value="0">Speech and Impromptu</option>
+                            <option value="1">Interview</option>
+                        </select>
+                    </div>
+                </div>
+                <input type="hidden" name="event">
+                <input type="hidden" name="judge">
+            </form>
+        </div>
+        <div class="actions">
+            <div class="ui positive button">Create</div>
+            <div class="ui negative button">Nevermind</div>
+        </div>
+    </div>
+
+    <div id="icons">
+        <i class="large green checkmark box link icon"></i>
+        <i class="large red remove circle link icon"></i>
+        <i class="large minus square link icon"></i>
     </div>
 
     <script>
         var data = {{ data | safe }};
         var ele = {
             event_sel: $('#event-select'),
-            judge_sel: $('#judge-select')
+            judge_sel: $('#judge-select'),
+            assign_table: $('#assign-table'),
+            add_occ: $('.add-person'),
+            add_assign_modal: $('#add-modal'),
+            student_sel: $("#student-sel"),
+            add_form: $("#add-form"),
+            icons: $("#icons")
         };
         var state = {
             selected_event: null,
-            selected_judge: null
+            selected_judge: null,
+            selected_occ: null,
+            show_occ: []
         };
+        var types = ['Speech and Impromptu', 'Interview'];
 
         function change_event() {
+            clear_table();
+            state.show_occ = [];
             state.selected_event = parseInt(ele.event_sel.val());
+
+            ele.judge_sel.empty();
             $.each(data.judges, function(i, judge) {
                 if (judge.event === state.selected_event) {
                     console.log(judge);
@@ -50,6 +117,205 @@
                                     .text(judge.first_name + ' ' + judge.last_name));
                 }
             });
+            ele.judge_sel.dropdown('refresh');
+            ele.judge_sel[0].selectedIndex = -1;
+
+            ele.student_sel.empty();
+            $.each(data.students, function(i, student) {
+                if (student.event === state.selected_event) {
+                    ele.student_sel
+                            .append($('<option>')
+                                    .attr('value', student.id)
+                                    .text(student.first_name + ' ' + student.last_name)
+                            );
+                }
+            });
+            ele.student_sel.dropdown('refresh');
+        }
+
+        function change_judge() {
+            console.log('firing');
+            state.selected_judge = parseInt(ele.judge_sel.val());
+            refresh_occ();
+        }
+
+        function refresh_occ() {
+            state.show_occ = [];
+            $.each(data.occurrences, function(i, occ) {
+                if (occ.judge === state.selected_judge) {
+                    state.show_occ.push(i);
+                }
+            }) ;
+            refresh_table();
+        }
+
+        function refresh_table() {
+            ele.add_occ.css('visibility', 'visible');
+            ele.assign_table.empty();
+            $.each(state.show_occ, function(i, occ_i) {
+                occ = data.occurrences[occ_i];
+                ele.assign_table.append(
+                        $('<tr>')
+                                .click(i, edit_row)
+                                .append(
+                                $('<td>')
+                                        .text(occ.display_time),
+                                $('<td>')
+                                        .text(occ.student_name),
+                                $('<td>')
+                                        .text(types[occ.type]))
+                )
+            })
+        }
+
+        function edit_row(event) {
+            if (state.selected_occ == null) {
+                var cells = ele.assign_table.children('tr').eq(event.data).children('td');
+                state.selected_occ = state.show_occ[event.data];
+                var occ_data = data.occurrences[state.selected_occ];
+
+                ele.student_edit_sel = $('<select>')
+                        .addClass('ui search dropdown');
+
+                ele.time_input = $('<input>')
+                                    .attr('name', 'time')
+                                    .attr('type', 'time')
+                                    .val(occ_data.time);
+
+                ele.type_input = $('<select>').addClass('ui dropdown')
+                        .append(
+                                $("<option value='0'>Speech and Impromptu</option>"),
+                                $("<option value='1'>Interview</option>")
+                        );
+
+                $.each(data.students, function(i, student) {
+                    if (student.event === state.selected_event) {
+                        ele.student_edit_sel
+                            .append($('<option>')
+                                    .attr('value', student.id)
+                                    .text(student.first_name + ' ' + student.last_name)
+                            );
+                    }
+                });
+
+
+                cells.empty();
+                cells.eq(0)
+                    .append($('<div>')
+                            .addClass('ui input')
+                            .append(ele.time_input));
+                cells.eq(1)
+                    .append($('<div>')
+                        .append(ele.student_edit_sel));
+
+                cells.eq(2)
+                        .append($('<div>')
+                                .append(ele.type_input));
+
+                ele.type_input.val(occ_data.type);
+                ele.type_input.dropdown();
+                ele.student_edit_sel.val(occ_data.student);
+                ele.student_edit_sel.dropdown();
+
+                cells.css('overflow', 'visible');
+
+                console.log(cells.eq(0).offset());
+                var offset = cells.eq(0).offset();
+                var height = cells.eq(0).height()/2;
+                var width = ele.icons.width();
+                ele.icons.css({
+                    visibility: 'visible',
+                    top: offset.top + height ,
+                    left: offset.left - width
+                })
+            }
+        }
+
+        function unedit_row(reload) {
+            state.selected_occ = null;
+            ele.icons.css("visibility", "hidden");
+            if (reload) {
+                refresh_occ();
+            } else {
+                refresh_table();
+            }
+        }
+
+        function clear_table() {
+            ele.add_occ.css('visibility', 'hidden');
+            ele.assign_table.empty();
+            ele.assign_table.append(
+                    $('<tr>').append(
+                            $('<td>')
+                                    .attr('colspan', 3)
+                                    .text('Select an event and judge to view assignments')
+                    )
+            );
+        }
+
+        function show_add_modal() {
+            ele.add_assign_modal.modal('show');
+        }
+
+        function add_assign() {
+            if (ele.add_form[0].checkValidity()) {
+                $("input[name='event']").val(state.selected_event);
+                $("input[name='judge']").val(state.selected_judge);
+                ele.add_form.ajaxSubmit({
+                    url: data.urls.create,
+                    type:'post',
+                    success: function(result) {
+                        if (result.result == 'success') {
+                            data.occurrences.push(result.occurrence);
+                            refresh_occ();
+                            return true
+                        } else {
+                            console.error(result.message);
+                            return false
+                        }
+                    }
+                });
+            } else {}
+        }
+
+        function edit_assign() {
+            if (state.selected_occ != null) {
+                var to_edit = data.occurrences[state.selected_occ];
+                $.post(
+                        data.urls.edit,
+                        {
+                            'id': to_edit.id,
+                            'time': ele.time_input.val(),
+                            'student': ele.student_edit_sel.val(),
+                            'type': ele.type_input.val()
+                        },
+                        function (result) {
+                            if (result.result == 'success') {
+                                data.occurrences[state.selected_occ] = result.occurrence;
+                                unedit_row(true);
+                            } else {
+                                console.error(result.message);
+                            }
+                        }
+                )
+            }
+        }
+
+        function delete_assign() {
+            $.post(
+                data.urls.delete,
+                {id: data.occurrences[state.show_occ[state.selected_occ]].id},
+                function (result) {
+                    if (result.result == 'fail') {
+                        console.error(result.message);
+                    } else if (result.result == 'success') {
+                        data.occurrences.splice(state.selected_occ, 1); // remove from data
+                        unedit_row(true);
+                    } else {
+                        console.error('Something went wrong that none of us prepared for.')
+                    }
+                }
+            );
         }
 
         function init(){
@@ -65,6 +331,22 @@
 
             ele.event_sel.dropdown();
             ele.judge_sel.dropdown();
+
+            ele.add_assign_modal.modal({
+                onApprove: add_assign,
+                onHidden: function() {
+                    ele.add_form[0].reset();
+                }
+            });
+
+            $("select[name='type']").dropdown();
+            ele.student_sel.dropdown();
+
+            icons = ele.icons.children();
+            icons.eq(0).click(edit_assign);
+            icons.eq(1).click(delete_assign);
+            icons.eq(2).click(unedit_row);
+
         }
 
         $(document).ready(init);
