@@ -1,6 +1,7 @@
 from django.core.files import File
 from django.contrib.auth.models import User
-from .models import SpeechScore, InterviewScore, Event
+from .models import SpeechScore, InterviewScore, Event, Student, Occurrence
+from collections import defaultdict
 import csv
 from .models import Judge
 import io
@@ -16,15 +17,65 @@ def get_unique_username(username):
 
     return tmp_username
 
-def export_scores(response, event_id, detailed):
+def export_scores(response, event_id, type):
     speech_scores = []
     interview_scores = []
     overall_scores = []
     event = Event.objects.get(id=event_id)
-    judges = Judge.objects.filter(event=event)
+    speech_scores = SpeechScore.objects.filter(event=event)
+    interview_scores = InterviewScore.objects.filter(event=event)
+    students = Student.objects.filter(event=event)
     csv_writer = csv.writer(response)
 
-    if detailed:
+    if type == 0: # then it is refined
+        students_and_speech_scores = defaultdict(list)
+        students_and_interview_scores = defaultdict(list)
+
+        # we need to collect all scores (including the ones that aren't associated with a time)
+        for speech in speech_scores:
+            try:
+                student = speech.occurrence.student
+            except Occurrence.DoesNotExist:
+                student = Student.objects.get(comp_id=speech.student_id)
+            students_and_speech_scores[student].append(speech)
+
+        for interview in interview_scores:
+            try:
+                student = interview.occurrence.student
+            except Occurrence.DoesNotExist:
+                student = Student.objects.get(comp_id=interview.student_id)
+            students_and_interview_scores[student].append(interview)
+
+        # calculate average speech scores
+        students_average_speech = defaultdict(int)
+
+        for student, speeches in students_and_speech_scores.items():
+            if len(speeches):
+                students_average_speech[student] = sum([speech.overall_score for speech in speeches])/len(speeches)
+
+        # calculate average interview scores
+        students_average_interview = defaultdict(int)
+
+        for student, interviews in students_and_interview_scores.items():
+            if len(speeches):
+                students_average_interview[student] = sum([interview.overall_score for interview in interviews])/len(interviews)
+
+
+        all_students = set(students_average_speech.keys())
+        all_students.update(students_average_interview.keys())
+
+        csv_writer.writerow(['Student ID', 'Student', 'Overall Speech', 'Overall Interview'])
+
+        for student in all_students:
+            csv_writer.writerow([
+                student.comp_id,
+                student.first_name + ' ' + student.last_name,
+                students_average_speech[student],
+                students_average_interview[student]
+            ])
+
+
+        """
         speech_fieldnames = ['Student ID', 'Student', 'Judge', 'Room', 'Speech Development',
                              'Effectiveness', 'Correctness', 'Appropriateness',
                              'Speech Value', 'Voice', 'Non-Verbal', 'Content',
@@ -77,16 +128,16 @@ def export_scores(response, event_id, detailed):
                 interview.appearance_score,
                 interview.overall_score
             ])
-
+        """
     else:
         student_ids_speeches = SpeechScore.objects.filter(grader=judges).values_list('student_id', flat=True).distinct()
         student_ids_interview = InterviewScore.objects.filter(grader=judges).values_list('student_id', flat=True).distinct()
         for id in student_ids_speeches:
             scores = SpeechScore.objects.filter(student_id=id)
-            sum = 0
+            total = 0
             for score in scores:
-                sum += score.overall_score
-            average = round(float(sum)/len(scores), 2)
+                total += score.overall_score
+            average = round(float(total)/len(scores), 2)
             speech_scores.append((id,
                                   scores.first().student_first_name + ' ' +
                                     scores.first().student_last_name,
@@ -94,10 +145,10 @@ def export_scores(response, event_id, detailed):
 
         for id in student_ids_interview:
             scores = InterviewScore.objects.filter(student_id=id)
-            sum = 0
+            total = 0
             for score in scores:
-                sum += score.overall_score
-            average = round(float(sum)/len(scores), 2)
+                total += score.overall_score
+            average = round(float(total)/len(scores), 2)
             interview_scores.append((id,
                                   scores.first().student_first_name + ' ' +
                                     scores.first().student_last_name,

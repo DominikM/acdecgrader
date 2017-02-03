@@ -116,6 +116,7 @@ def speech(request):
             if score_data.is_valid():
                 score = score_data.save(commit=False)
                 score.grader = request.user
+                score.event = request.user.judge.event
                 score.save()
                 if request.POST.get('time'):
                     time = Occurrence.objects.get(id=int(request.POST['time']))
@@ -192,6 +193,7 @@ def interview(request):
             if score_data.is_valid():
                 score = score_data.save(commit=False)
                 score.grader = request.user
+                score.event = request.user.judge.event
                 score.save()
                 if request.POST.get('time'):
                     time = Occurrence.objects.get(id=int(request.POST['time']))
@@ -291,9 +293,17 @@ def download(request):
         if request.method == "POST":
             event_choice = DownloadForm(request.POST)
             event = int(request.POST['event'])
+            type = int(request.POST['type'])
             response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename="scores.csv"'
-            response = export_scores(response, event, int(request.POST['type']))
+
+            if type == 0:
+                response['Content-Disposition'] = 'attachment; filename="refined_scores.csv"'
+            elif type == 1:
+                response['Content-Disposition'] = 'attachment; filename="raw_speech_imp.csv"'
+            elif type == 2:
+                response['Content-Disposition'] = 'attachment; filename="raw_interview.csv"'
+
+            response = export_scores(response, event, type)
             print(request.POST['type'])
             return response
         else:

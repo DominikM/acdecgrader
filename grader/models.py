@@ -59,6 +59,7 @@ class Score(models.Model):
     student_last_name = models.CharField(max_length=30)
     overall_score = models.IntegerField(blank=True)
     grader = models.ForeignKey(User)
+    event = models.ForeignKey('Event')
 
 
 class SpeechScore(Score):
@@ -149,6 +150,6 @@ class Occurrence(models.Model):
     time = models.TimeField()
     type = models.SmallIntegerField(choices=time_types)
     event = models.ForeignKey('Event')
-    speech_score = models.ForeignKey('SpeechScore', null=True)
-    int_score = models.ForeignKey('InterviewScore', null=True)
+    speech_score = models.OneToOneField('SpeechScore', null=True)
+    int_score = models.OneToOneField('InterviewScore', null=True)
 

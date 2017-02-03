@@ -53,8 +53,9 @@ class DownloadForm(forms.Form):
     event = forms.ModelChoiceField(queryset=Event.objects.all())
     type = forms.ChoiceField(widget=forms.RadioSelect,
                              choices=(
-                                (1, "Detailed"),
-                                (0, "Simple"))
+                                (0, "Refined"),
+                                (1, "Raw Speech and Impromptu"),
+                                (2, "Raw Interview"))
                              )
 
 
