@@ -27,24 +27,25 @@ def export_scores(response, event_id, type):
     students = Student.objects.filter(event=event)
     csv_writer = csv.writer(response)
 
-    if type == 0: # then it is refined
-        students_and_speech_scores = defaultdict(list)
-        students_and_interview_scores = defaultdict(list)
+    students_and_speech_scores = defaultdict(list)
+    students_and_interview_scores = defaultdict(list)
 
-        # we need to collect all scores (including the ones that aren't associated with a time)
-        for speech in speech_scores:
-            try:
-                student = speech.occurrence.student
-            except Occurrence.DoesNotExist:
-                student = Student.objects.get(comp_id=speech.student_id)
-            students_and_speech_scores[student].append(speech)
+    # we need to collect all scores (including the ones that aren't associated with a time)
+    for speech in speech_scores:
+        try:
+            student = speech.occurrence.student
+        except Occurrence.DoesNotExist:
+            student = Student.objects.get(comp_id=speech.student_id)
+        students_and_speech_scores[student].append(speech)
 
-        for interview in interview_scores:
-            try:
-                student = interview.occurrence.student
-            except Occurrence.DoesNotExist:
-                student = Student.objects.get(comp_id=interview.student_id)
-            students_and_interview_scores[student].append(interview)
+    for interview in interview_scores:
+        try:
+            student = interview.occurrence.student
+        except Occurrence.DoesNotExist:
+            student = Student.objects.get(comp_id=interview.student_id)
+        students_and_interview_scores[student].append(interview)
+
+    if type is 0: # then it is refined
 
         # calculate average speech scores
         students_average_speech = defaultdict(int)
@@ -74,26 +75,24 @@ def export_scores(response, event_id, type):
                 students_average_interview[student]
             ])
 
-
-        """
+    if type is 1:  # speech
         speech_fieldnames = ['Student ID', 'Student', 'Judge', 'Room', 'Speech Development',
                              'Effectiveness', 'Correctness', 'Appropriateness',
                              'Speech Value', 'Voice', 'Non-Verbal', 'Content',
                              'Delivery', 'Overall Effectiveness', 'Time Penalty', 'Overall']
 
-        interview_fieldnames = ['Student ID', 'Student', 'Judge', 'Room', 'Voice',
-                                'Language Usage', 'Interpersonal Skills', 'Non-Verbal Language',
-                                'Manner', 'Listening Skills', 'Answering Skills',
-                                'Responses', 'Overall Effectiveness', 'Appearance', 'Overall']
-
-        csv_writer.writerow(["Speeches"])
         csv_writer.writerow(speech_fieldnames)
-        for speech in SpeechScore.objects.filter(grader=judges):
+        for speech in speech_scores:
+            try:
+                student = speech.occurrence.student
+            except Occurrence.DoesNotExist:
+                student = Student.objects.get(comp_id=speech.student_id)
+
             csv_writer.writerow([
-                speech.student_id,
-                speech.student_first_name + ' ' + speech.student_last_name,
+                student.comp_id,
+                student.first_name + ' ' + student.last_name,
                 speech.grader.first_name + ' ' + speech.grader.last_name,
-                Judge.objects.get(username=speech.grader.username).room,
+                speech.grader.judge.room,
                 speech.development_score,
                 speech.effectiveness_score,
                 speech.correctness_score,
@@ -108,14 +107,24 @@ def export_scores(response, event_id, type):
                 speech.overall_score
             ])
 
-        csv_writer.writerow(["Interviews"])
+    if type is 2:  # interview
+        interview_fieldnames = ['Student ID', 'Student', 'Judge', 'Room', 'Voice',
+                                'Language Usage', 'Interpersonal Skills', 'Non-Verbal Language',
+                                'Manner', 'Listening Skills', 'Answering Skills',
+                                'Responses', 'Overall Effectiveness', 'Appearance', 'Overall']
+
         csv_writer.writerow(interview_fieldnames)
-        for interview in InterviewScore.objects.filter(grader=judges):
+        for interview in interview_scores:
+            try:
+                student = speech.occurrence.student
+            except Occurrence.DoesNotExist:
+                student = Student.objects.get(comp_id=speech.student_id)
+
             csv_writer.writerow([
-                interview.student_id,
-                interview.student_first_name + ' ' + interview.student_last_name,
+                student.comp_id,
+                student.first_name + ' ' + student.last_name,
                 interview.grader.first_name + ' ' + interview.grader.last_name,
-                Judge.objects.get(username=interview.grader.username).room,
+                interview.grader.judge.room,
                 interview.voice_score,
                 interview.language_score,
                 interview.interpersonal_score,
@@ -128,63 +137,5 @@ def export_scores(response, event_id, type):
                 interview.appearance_score,
                 interview.overall_score
             ])
-        """
-    else:
-        student_ids_speeches = SpeechScore.objects.filter(grader=judges).values_list('student_id', flat=True).distinct()
-        student_ids_interview = InterviewScore.objects.filter(grader=judges).values_list('student_id', flat=True).distinct()
-        for id in student_ids_speeches:
-            scores = SpeechScore.objects.filter(student_id=id)
-            total = 0
-            for score in scores:
-                total += score.overall_score
-            average = round(float(total)/len(scores), 2)
-            speech_scores.append((id,
-                                  scores.first().student_first_name + ' ' +
-                                    scores.first().student_last_name,
-                                  average))
-
-        for id in student_ids_interview:
-            scores = InterviewScore.objects.filter(student_id=id)
-            total = 0
-            for score in scores:
-                total += score.overall_score
-            average = round(float(total)/len(scores), 2)
-            interview_scores.append((id,
-                                  scores.first().student_first_name + ' ' +
-                                    scores.first().student_last_name,
-                                  average))
-
-        s_success = []
-        i_success = []
-
-        for s_score in speech_scores:
-            for i_score in interview_scores:
-                if i_score[0] == s_score[0]:
-                    overall_scores.append((s_score[0],
-                                           s_score[1],
-                                           s_score[2],
-                                           i_score[2]))
-                    i_success.append(i_score)
-                    s_success.append(s_score)
-
-        print(s_success)
-        print(speech_scores)
-
-        for s_score in list(set(speech_scores)-set(s_success)):
-            overall_scores.append((s_score[0],
-                                   s_score[1],
-                                   s_score[2],
-                                   "No Interview Score"))
-
-        for i_score in list(set(interview_scores)-set(i_success)):
-            overall_scores.append((i_score[0],
-                                   i_score[1],
-                                   "No Speech Score",
-                                   i_score[2]))
-
-        fieldnames = ['Student ID', 'Name', 'Speech', 'Interview']
-        csv_writer.writerow(fieldnames)
-        for score in overall_scores:
-            csv_writer.writerow(score)
 
     return response
