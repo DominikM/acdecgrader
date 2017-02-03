@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'^students/delete/$', views.student_delete, name="student_delete"),
     url(r'^students/edit/$', views.student_edit, name="student_edit"),
     url(r'^students/create/$', views.student_create, name="student_create"),
+    url(r'^students/bulk_create/$', views.students_create, name='students_create'),
 
     url(r'^judges/$', views.judge_panel_view, name="judge_panel"),
     url(r'^judges/delete/$', views.judge_delete, name="judge_delete"),

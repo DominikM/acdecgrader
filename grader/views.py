@@ -174,7 +174,8 @@ def student_panel_view(request):
         urls = {
             'delete': reverse('student_delete'),
             'edit': reverse('student_edit'),
-            'create': reverse('student_create')
+            'create': reverse('student_create'),
+            'bulk_create': reverse('students_create')
         }
 
         data = {
@@ -330,30 +331,46 @@ def students_create(request):
             })
 
         students = []
+        students_dicts = []
         for row in student_reader:
             student_id = row[0]
             full_name = row[1]
             first_name = full_name.split(' ')[0]
             last_name = full_name.split(' ')[1]
+            rank_letter = row[2].lower()
+            print(rank_letter)
+            if rank_letter == 'a':
+                rank = 2
+            elif rank_letter == 'b':
+                rank = 1
+            elif rank_letter == 'c':
+                rank = 0
 
-            new_student = Student.create(
+            new_student = Student(
                 comp_id=int(student_id),
                 first_name=first_name,
-                last_name=last_name
+                last_name=last_name,
+                rank=rank,
+                event=event
             )
 
-            students.append({
+            students.append(new_student)
+
+            students_dicts.append({
                 'id': new_student.id,
                 'comp_id': student_id,
                 'first_name': first_name,
                 'last_name': last_name,
                 'event_id': event.id,
+                'rank': rank
             })
+
+        Student.objects.bulk_create(students)
 
 
         return JsonResponse({
             'result': 'success',
-            'students': students
+            'students': students_dicts
         })
 
 
@@ -487,7 +504,9 @@ def judges_create(request):
                 'message': 'Event does not exist'
             })
 
+        users = []
         judges = []
+        judges_dicts = []
         for row in judge_reader:
             full_name = row[0]
             email = row[1]
@@ -498,22 +517,24 @@ def judges_create(request):
 
             password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
-            new_user = User.objects.create_user(
+            new_user = User(
                 username=username,
-                password=password,
                 first_name=first_name,
                 last_name=last_name,
                 email=email
             )
+            new_user.set_password(password)
+            users.append(new_user)
 
-            new_judge = Judge.objects.create(
+            new_judge = Judge(
                 room=room,
                 event=event,
                 user=new_user,
                 password=password
             )
+            judges.append(new_judge)
 
-            judges.append({
+            judges_dicts.append({
                 'id': new_judge.id,
                 'first_name': first_name,
                 'last_name': last_name,
@@ -522,9 +543,12 @@ def judges_create(request):
                 'password': password
             })
 
+        User.objects.bulk_create(users)
+        Judge.objects.bulk_create(judges)
+
         return JsonResponse({
             'result': 'success',
-            'judges': judges
+            'judges': judges_dicts
         })
 
 

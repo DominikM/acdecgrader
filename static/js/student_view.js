@@ -218,9 +218,31 @@ function delete_student() {
 }
 
 function add_student() {
+    console.log('firing');
     file_input = document.getElementById('student-csv');
     if (file_input.value != '') {
+        var students_data = new FormData();
+        students_data.append('event', state.selected_event);
+        students_data.append('file', document.getElementById('student-csv').files[0]);
 
+        $.ajax({
+            type: 'post',
+            url: data.urls.bulk_create,
+            data: students_data,
+            success: function (result) {
+                if (result.result == 'success') {
+                    data.students = data.students.concat(result.students);
+                    refresh_students();
+                    update_table();
+                    return true;
+                } else {
+                    console.error(result.message);
+                    return false;
+                }
+            },
+            processData: false,
+            contentType: false
+        })
     } else {
         form = $('#add-student-form');
         inputs = form.find('.field');
