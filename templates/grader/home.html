@@ -7,14 +7,54 @@
     <h1>Hello {{ name }}</h1>
     <p>What would you like to do?</p>
 
-    <a class="ui button" href="speech">Score a Speech</a>
-    <a class="ui button" href="interview">Score an Interview</a>
+    <a class="ui button" href="speech">Unplanned speech</a>
+    <a class="ui button" href="interview">Unplanned interview</a>
     {% if user.is_superuser %}
         <p><a href="{% url 'judge_panel' %}">Judges</a></p>
         <p><a href="{% url 'student_panel' %}">Students</a></p>
         <p><a href="admin">Admin Console</a></p>
         <p><a href="event">Create an Event</a></p>
         <p><a href="download">Download Scores</a></p>
+
+    {% else %}
+        <div class="table-container">
+        <table class="ui basic table">
+            <tbody>
+            {% for time in times %}
+                <tr>
+                    <td>
+                        {{ time.student_name }}
+                    </td>
+                    <td>
+                        {{ time.display_time }}
+                    </td>
+                    <td>
+                        {{ time.type_name }}
+                    </td>
+                    <td>
+                        {% if time.score %}
+                        {{ time.display_score }}
+                        {% else %}
+                            No score yet!
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if time.type %}
+                        <a class="ui button" href="{% url 'interview'%}?student='{{ time.student }}'&score='{{ time.score_id }}'">
+                            {% if time.score %} Edit {% else %} Score {% endif %}
+                        </a>
+                        {% else %}
+                        <a class="ui button" href="{% url 'speech' %}?student={{ time.student }}&score={{ time.score_id }}">
+                            {% if time.score %} Edit {% else %} Score {% endif %}
+                        </a>
+                        {% endif %}
+                    </td>
+                    <div class="column"></div>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
     {% endif %}
     <p></p>
     <a href="logout">Logout</a>

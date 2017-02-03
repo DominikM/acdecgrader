@@ -15,8 +15,45 @@ import json
 
 
 def index(request):
-    if request.user.is_authenticated():
-        return render(request, "grader/home.html", context={"name":request.user.first_name})
+    if request.user.is_authenticated() and not request.user.is_superuser:
+        cur_judge = request.user.judge
+        scheduled = cur_judge.occurrence_set.order_by('time')
+        scheduled_dicts = []
+        for time in scheduled:
+            score = None
+            display_score = ''
+            score_id = ''
+
+            if time.type == 0:
+                type_name = 'Speech and Impromptu'
+                if time.speech_score:
+                    score = time.speech_score
+                    display_score = score.overall_score
+                    score_id = score.id
+            elif time.type == 1:
+                type_name = 'Interview'
+                if time.int_score:
+                    score = time.int_score
+                    display_score = score.overall_score
+                    score_id = score.id
+
+
+            scheduled_dicts.append({
+                'student': time.student.id,
+                'student_name': time.student.first_name + ' ' + time.student.last_name,
+                'student_id': time.student.comp_id,
+                'time': time.time.isoformat(),
+                'display_time': time.time.strftime('%I:%M %p'),
+                'type': time.type,
+                'type_name': type_name,
+                'score': display_score,
+                'score_id': score_id
+            })
+        return render(request, "grader/home.html", context={"name":request.user.first_name,
+                                                            'times': scheduled_dicts})
+
+    elif request.user.is_authenticated and request.user.is_superuser:
+        return render(request, "grader/home.html", context={'name': 'organizer'})
     else:
         return HttpResponseRedirect("login")
 

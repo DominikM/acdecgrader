@@ -149,6 +149,6 @@ class Occurrence(models.Model):
     time = models.TimeField()
     type = models.SmallIntegerField(choices=time_types)
     event = models.ForeignKey('Event')
-    speech_score = models.ForeignKey('SpeechScore')
-    int_score = models.ForeignKey('InterviewScore')
+    speech_score = models.ForeignKey('SpeechScore', null=True)
+    int_score = models.ForeignKey('InterviewScore', null=True)
 
