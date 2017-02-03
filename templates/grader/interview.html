@@ -24,6 +24,12 @@
                 {% endfor %}
                 <p></p>
             {% endfor %}
+            {% if time %}
+            <input type="hidden" name="time" value="{{ time }}">
+            {% endif %}
+            {% if score %}
+            <input type="hidden" name="score" value="{{ score }}">
+            {% endif %}
             <p></p>
             <input type="submit" value="Submit" class="ui button primary"/>
         </form>
@@ -37,7 +43,7 @@
    <script>
 
     document.getElementById("interview-form").onchange= function() {
-        var scores = []
+        var scores = [];
         var a;
         a = document.getElementById("id_voice_score");
         scores.push(a.options[a.selectedIndex].value);

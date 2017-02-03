@@ -8,7 +8,7 @@ import random
 import string
 import csv
 from .utils import export_scores, get_unique_username
-from .models import Event, Judge, Student, Time, Occurrence
+from .models import Event, Judge, Student, Time, Occurrence, SpeechScore, InterviewScore
 from datetime import datetime
 import json
 # Create your views here.
@@ -37,8 +37,8 @@ def index(request):
                     display_score = score.overall_score
                     score_id = score.id
 
-
             scheduled_dicts.append({
+                'id': time.id,
                 'student': time.student.id,
                 'student_name': time.student.first_name + ' ' + time.student.last_name,
                 'student_id': time.student.comp_id,
@@ -49,6 +49,37 @@ def index(request):
                 'score': display_score,
                 'score_id': score_id
             })
+
+        unscheduled_int = InterviewScore.objects.filter(grader=request.user, occurrence=None)
+        for score in unscheduled_int:
+            scheduled_dicts.append({
+                'id': '',
+                'student': '',
+                'student_name': score.student_first_name + ' ' + score.student_last_name,
+                'student_id': score.student_id,
+                'time': '',
+                'display_time': 'Unscheduled',
+                'type': 1,
+                'type_name': 'Interview',
+                'score': score.overall_score,
+                'score_id': score.id
+            })
+
+        unscheduled_speech = SpeechScore.objects.filter(grader=request.user, occurrence=None)
+        for score in unscheduled_speech:
+            scheduled_dicts.append({
+                'id': '',
+                'student': '',
+                'student_name': score.student_first_name + ' ' + score.student_last_name,
+                'student_id': score.student_id,
+                'time': '',
+                'display_time': 'Unscheduled',
+                'type': 0,
+                'type_name': 'Speech and Impromptu',
+                'score': score.overall_score,
+                'score_id': score.id
+            })
+
         return render(request, "grader/home.html", context={"name":request.user.first_name,
                                                             'times': scheduled_dicts})
 
@@ -77,17 +108,74 @@ def login_view(request):
 def speech(request):
     if request.user.is_authenticated():
         if request.method == "POST":
-            score_data = SpeechForm(request.POST)
+            if request.POST.get('score'):
+                score_data = SpeechForm(request.POST, instance=SpeechScore.objects.get(id=int(request.POST['score'])))
+            else:
+                score_data = SpeechForm(request.POST)
+
             if score_data.is_valid():
                 score = score_data.save(commit=False)
                 score.grader = request.user
                 score.save()
+                if request.POST.get('time'):
+                    time = Occurrence.objects.get(id=int(request.POST['time']))
+                    time.speech_score = score
+                    time.save()
                 return HttpResponseRedirect("/")
             else:
                 return render(request, "grader/speech.html", context={'form':score_data})
         else:
-            speech_score_form = SpeechForm()
-            return render(request, "grader/speech.html", context={'form':speech_score_form})
+            score_id = None
+            time_id = None
+            if request.GET.get('time'):
+                time = Occurrence.objects.get(id=int(request.GET['time']))
+                time_id = time.id
+                student = time.student
+
+                if time.speech_score:
+                    score = time.speech_score
+                    speech_score_form = SpeechForm(initial={
+                        'student_id': student.comp_id,
+                        'student_first_name': student.first_name,
+                        'student_last_name': student.last_name,
+                        'development_score': score.development_score,
+                        'effectiveness_score': score.effectiveness_score,
+                        'correctness_score': score.correctness_score,
+                        'appropriateness_score': score.appropriateness_score,
+                        'value_score': score.value_score,
+                        'voice_score': score.voice_score,
+                        'nonverbal_score': score.nonverbal_score,
+                        'content_score': score.content_score,
+                        'delivery_score': score.delivery_score,
+                        'overall_effect': score.overall_effect,
+                        'time_violations': score.time_violations
+                    })
+                    score_id = score.id
+
+                else:
+                    speech_score_form = SpeechForm(initial={
+                        'student_id': student.comp_id,
+                        'student_first_name': student.first_name,
+                        'student_last_name': student.last_name,
+                    })
+
+                speech_score_form.fields['student_id'].widget.attrs['readonly'] = True
+                speech_score_form.fields['student_first_name'].widget.attrs['readonly'] = True
+                speech_score_form.fields['student_last_name'].widget.attrs['readonly'] = True
+
+                return render(request, "grader/speech.html",
+                              context={'form': speech_score_form, 'time': time_id, 'score': score_id})
+
+            elif request.GET.get('score'):
+                score = SpeechScore.objects.get(id=int(request.GET['score']))
+                score_id = score.id
+                speech_score_form = SpeechForm(instance=score)
+
+                return render(request, "grader/speech.html", context={'form':speech_score_form, 'time': time_id, 'score': score_id})
+
+            else:
+                return render(request, "grader/speech.html", context={'form':SpeechForm()})
+
 
     else:
         return HttpResponseRedirect("/")
@@ -96,17 +184,73 @@ def speech(request):
 def interview(request):
     if request.user.is_authenticated():
         if request.method == "POST":
-            score_data = InterviewForm(request.POST)
+            if request.POST.get('score'):
+                score_data = InterviewForm(request.POST, instance=InterviewScore.objects.get(id=int(request.POST['score'])))
+            else:
+                score_data = InterviewForm(request.POST)
+
             if score_data.is_valid():
                 score = score_data.save(commit=False)
                 score.grader = request.user
                 score.save()
+                if request.POST.get('time'):
+                    time = Occurrence.objects.get(id=int(request.POST['time']))
+                    time.int_score = score
+                    time.save()
                 return HttpResponseRedirect("/")
             else:
                 return render(request, "grader/speech.html", context={'form':score_data})
         else:
-            interview_score_form = InterviewForm()
-            return render(request, "grader/interview.html", context={'form':interview_score_form})
+            score_id = None
+            time_id = None
+            if request.GET.get('time'):
+                time = Occurrence.objects.get(id=int(request.GET['time']))
+                time_id = time.id
+                student = time.student
+
+                if time.int_score:
+                    score = time.int_score
+                    int_score_form = InterviewForm(initial={
+                        'student_id': student.comp_id,
+                        'student_first_name': student.first_name,
+                        'student_last_name': student.last_name,
+                        'voice_score': score.voice_score,
+                        'language_score': score.language_score,
+                        'interpersonal_score': score.interpersonal_score,
+                        'nonverbal_score': score.nonverbal_score,
+                        'manner_score': score.manner_score,
+                        'listening_score': score.listening_score,
+                        'answering_score': score.answering_score,
+                        'response_score': score.response_score,
+                        'overall_effect': score.overall_effect,
+                        'appearance_score': score.appearance_score,
+                    })
+                    score_id = score.id
+
+                else:
+                    int_score_form = InterviewForm(initial={
+                        'student_id': student.comp_id,
+                        'student_first_name': student.first_name,
+                        'student_last_name': student.last_name,
+                    })
+
+                int_score_form.fields['student_id'].widget.attrs['readonly'] = True
+                int_score_form.fields['student_first_name'].widget.attrs['readonly'] = True
+                int_score_form.fields['student_last_name'].widget.attrs['readonly'] = True
+
+                return render(request, "grader/speech.html",
+                              context={'form': int_score_form, 'time': time_id, 'score': score_id})
+
+            elif request.GET.get('score'):
+                score = InterviewScore.objects.get(id=int(request.GET['score']))
+                score_id = score.id
+                int_score_form = InterviewForm(instance=score)
+
+                return render(request, "grader/interview.html", context={'form':int_score_form, 'time': time_id, 'score': score_id})
+
+            else:
+                return render(request, "grader/speech.html", context={'form':InterviewForm()})
+
 
     else:
         return HttpResponseRedirect("/")

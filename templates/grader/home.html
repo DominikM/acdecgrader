@@ -12,6 +12,7 @@
     {% if user.is_superuser %}
         <p><a href="{% url 'judge_panel' %}">Judges</a></p>
         <p><a href="{% url 'student_panel' %}">Students</a></p>
+        <p><a href="{% url 'assignments_view' %}">Times</a></p>
         <p><a href="admin">Admin Console</a></p>
         <p><a href="event">Create an Event</a></p>
         <p><a href="download">Download Scores</a></p>
@@ -33,18 +34,18 @@
                     </td>
                     <td>
                         {% if time.score %}
-                        {{ time.display_score }}
+                        {{ time.score }}
                         {% else %}
                             No score yet!
                         {% endif %}
                     </td>
                     <td>
                         {% if time.type %}
-                        <a class="ui button" href="{% url 'interview'%}?student='{{ time.student }}'&score='{{ time.score_id }}'">
+                        <a class="ui button" href="{% url 'interview'%}?time={{ time.id }}&score={{ time.score_id }}">
                             {% if time.score %} Edit {% else %} Score {% endif %}
                         </a>
                         {% else %}
-                        <a class="ui button" href="{% url 'speech' %}?student={{ time.student }}&score={{ time.score_id }}">
+                        <a class="ui button" href="{% url 'speech' %}?time={{ time.id }}&score={{ time.score_id }}">
                             {% if time.score %} Edit {% else %} Score {% endif %}
                         </a>
                         {% endif %}

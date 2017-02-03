@@ -19,10 +19,13 @@
                     {% if field.id_for_label == "id_development_score"  %}
                         <h3>Speech:</h3>
                     {% endif %}
+
                     {%  if field.id_for_label == "id_content_score" %}
                         <h3>Impromptu:</h3>
                     {% endif %}
+
                     {{ field.label_tag }} {{ field }}
+
                     {% if field.help_text %}
                     <p class="help">{{ field.help_text|safe }}</p>
                     {% endif %}
@@ -33,6 +36,12 @@
                 <p></p>
             {% endfor %}
             <p></p>
+            {% if time %}
+            <input type="hidden" name="time" value="{{ time }}">
+            {% endif %}
+            {% if score %}
+            <input type="hidden" name="score" value="{{ score }}">
+            {% endif %}
             <input type="submit" value="Submit" class="ui button primary"/>
         </form>
     </div>
