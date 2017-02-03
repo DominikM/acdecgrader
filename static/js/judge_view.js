@@ -49,11 +49,15 @@ function update_table() {
         var judge_user = document.createElement('td');
         judge_user.innerHTML = cur_judge.username;
 
+        var judge_room = document.createElement('td');
+        judge_room.innerHTML = cur_judge.room;
+
         document.getElementsByTagName('table')[0].className = "ui celled fixed selectable table";
 
         var row = document.createElement('tr');
         row.appendChild(judge_f_name);
         row.appendChild(judge_l_name);
+        row.appendChild(judge_room);
         row.appendChild(judge_user);
         row.appendChild(judge_pass);
 
@@ -96,9 +100,16 @@ function edit_row(judge) {
 
         elements.last_name_input.value = sel_judge.last_name;
 
+        elements.room_input = cells[2]
+            .appendChild(document.createElement('div'))
+            .appendChild(document.createElement('input'));
+
+        elements.room_input.value = sel_judge.room;
+
         var input_divs = selected_row.getElementsByTagName('div');
         input_divs[0].className = 'ui input'; // first name
         input_divs[1].className = 'ui input'; // last name
+        input_divs[2].className = 'ui input'; // room
 
         // now let's add the buttons to the left of the row
 
@@ -137,12 +148,14 @@ function save_judge() {
     var judge = data.judges[state.show_judges[state.selected_judge]];
     var n_first_name = elements.first_name_input.value;
     var n_last_name = elements.last_name_input.value;
+    var n_room = elements.room_input.value;
     $.post(
         data.urls.edit,
         {
             id: judge.id,
             first_name: n_first_name,
             last_name: n_last_name,
+            room: n_room
         },
         function (result) {
             if (result.result == 'fail') {
@@ -150,6 +163,7 @@ function save_judge() {
             } else if (result.result == 'success') {
                 judge.first_name = n_first_name;
                 judge.last_name = n_last_name;
+                judge.room = n_room;
                 unedit_row();
             } else {
                 console.error('Something went wrong that none of us prepared for.');
@@ -181,7 +195,6 @@ function add_judge() {
     if (file_input.value != '') {
         var judges_data = new FormData();
         judges_data.append('event', state.selected_event);
-        console.log(document.getElementById('judge-csv').files[0]);
         judges_data.append('file', document.getElementById('judge-csv').files[0]);
         
         $.ajax({
@@ -190,6 +203,7 @@ function add_judge() {
             data: judges_data,
             success: function (result) {
                 if (result.result == 'success') {
+                    console.log('success');
                     data.judges = data.judges.concat(result.judges);
                     refresh_judges();
                     update_table();

@@ -398,7 +398,8 @@ def judge_panel_view(request):
                 'first_name': _judge.user.first_name,
                 'last_name': _judge.user.last_name,
                 'username': _judge.user.username,
-                'password': _judge.password
+                'password': _judge.password,
+                'room': _judge.room
             }
 
             judge_dicts.append(judge_dict)
@@ -463,7 +464,8 @@ def judge_edit(request):
 
         if not (request.POST.get('first_name') or
                 request.POST.get('last_name') or
-                request.POST.get('event')):
+                request.POST.get('event') or
+                request.POST.get('room')):
             return JsonResponse({
                 'result': 'fail',
                 'message': 'Must supply an attribute to edit'
@@ -473,6 +475,8 @@ def judge_edit(request):
             judge.user.first_name = request.POST['first_name']
         if request.POST.get('last_name'):
             judge.user.last_name = request.POST['last_name']
+        if request.POST.get('room'):
+            judge.room = request.POST['room']
         if request.POST.get('event'):
             try:
                 new_event = Event.objects.get(id=request.POST['event'])
@@ -517,22 +521,22 @@ def judges_create(request):
 
             password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
-            new_user = User(
+            new_user = User.objects.create_user(
                 username=username,
+                password=password,
                 first_name=first_name,
                 last_name=last_name,
                 email=email
             )
-            new_user.set_password(password)
-            users.append(new_user)
 
-            new_judge = Judge(
+            print(room)
+
+            new_judge = Judge.objects.create(
                 room=room,
                 event=event,
                 user=new_user,
                 password=password
             )
-            judges.append(new_judge)
 
             judges_dicts.append({
                 'id': new_judge.id,
@@ -540,11 +544,9 @@ def judges_create(request):
                 'last_name': last_name,
                 'event_id': event.id,
                 'username': username,
-                'password': password
+                'password': password,
+                'room': room
             })
-
-        User.objects.bulk_create(users)
-        Judge.objects.bulk_create(judges)
 
         return JsonResponse({
             'result': 'success',
@@ -568,6 +570,11 @@ def judge_create(request):
             new_user.last_name = request.POST['last_name']
         else:
             error += 'Must supply a last name. '
+
+        if request.POST.get('room'):
+            new_judge.room = request.POST['room']
+        else:
+            error += 'Must supply a room. '
 
         if request.POST.get('event'):
             try:
@@ -596,7 +603,8 @@ def judge_create(request):
                     'last_name': new_user.last_name,
                     'event_id': new_judge.event.id,
                     'username': new_user.username,
-                    'password': new_judge.password
+                    'password': new_judge.password,
+                    'room': new_judge.room
                 }
             })
 
