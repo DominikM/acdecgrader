@@ -199,7 +199,7 @@ def interview(request):
                     time.save()
                 return HttpResponseRedirect("/")
             else:
-                return render(request, "grader/speech.html", context={'form':score_data})
+                return render(request, "grader/interview.html", context={'form':score_data})
         else:
             score_id = None
             time_id = None
@@ -238,7 +238,7 @@ def interview(request):
                 int_score_form.fields['student_first_name'].widget.attrs['readonly'] = True
                 int_score_form.fields['student_last_name'].widget.attrs['readonly'] = True
 
-                return render(request, "grader/speech.html",
+                return render(request, "grader/interview.html",
                               context={'form': int_score_form, 'time': time_id, 'score': score_id})
 
             elif request.GET.get('score'):
@@ -249,7 +249,7 @@ def interview(request):
                 return render(request, "grader/interview.html", context={'form':int_score_form, 'time': time_id, 'score': score_id})
 
             else:
-                return render(request, "grader/speech.html", context={'form':InterviewForm()})
+                return render(request, "grader/interview.html", context={'form':InterviewForm()})
 
 
     else:
@@ -1177,3 +1177,50 @@ def assignment_delete(request):
             'result': 'success',
             'message': 'Deletion succeeded'
         })
+
+def assignments_create(request):
+    if request.method == 'POST' and request.user.is_superuser:
+        event_id = request.POST['event']
+        assign_reader = csv.reader(request.FILES['file'].read().decode('utf-8').splitlines())
+        try:
+            event = Event.objects.get(id=event_id)
+        except Event.DoesNotExist:
+            return JsonResponse({
+                'result': 'fail',
+                'message': 'Event does not exist'
+            })
+
+        occs = []
+        occ_dicts = []
+        for row in assign_reader:
+            student_comp_id = int(row[0])
+            judge_email = row[1]
+            time_string = row[2]
+            type = int(row[3])
+
+            student = Student.objects.get(comp_id=student_comp_id)
+            judge = User.objects.get(email=judge_email).judge
+            time = datetime.strptime(time_string, '%I:%M %p')
+
+            occs.append(Occurrence(
+                student=student,
+                judge=judge,
+                time=time,
+                event=event,
+                type=type
+            ))
+
+        Occurrence.objects.bulk_create(occs)
+        for occ in occs:
+            occ_dicts.append({
+                'id': occ.id,
+                'judge': occ.judge.id,
+                'student': occ.student.id,
+                'time': occ.time.strftime('%H:%M'),
+                'display_time': occ.time.strftime('%I:%M %p'),
+                # 'display_start': occ.time.start.strftime('%I:%M %p'),
+                'student_name': occ.student.first_name + ' ' + occ.student.last_name,
+                'type': occ.type,
+            })
+
+        return JsonResponse({'result': 'success', 'occurrences': occ_dicts})
