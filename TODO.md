@@ -1,6 +1,6 @@
 - [x] Interface for the scorers to upload and edit the student roster list
 - [x] Interface for the scorers to upload and edit the judge roster list
-- [ ] Interface for the scorers to to download a list of all judges and their rooms, usernames and passwords
+- [x] Interface for the scorers to to download a list of all judges and their rooms, usernames and passwords
 - [ ] Interface for the judges to log in and see their home screen: their schedule, generated as a list of all the students who are scheduled in the room in order by time slot (pay no mind to breaks)
 - [ ] The schedule shows: ID, Student Name, Time, Event Type (Speech or Interview), Score (blank if no score has been submitted), and a SCORE button to take to the scoring screen (btw: score should be what **the judge** assigned them, not the final averaged score, and should also say NO SHOW if it has been submitted as such. Also, once score has been submitted turn the SCORE button into an EDIT button)
 - [ ] Also on the main page, at the bottom, are "SCORE UNSCHEDULED INTERVIEW" and "SCORE UNSCHEDULED SPEECH" buttons, in case of emergency room shuffling, as well as a LOG OUT button. 
