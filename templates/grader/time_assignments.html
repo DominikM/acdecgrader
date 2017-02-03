@@ -20,6 +20,12 @@
                 <select class="ui dropdown" id="judge-select" onchange="change_judge()"></select>
             </div>
         </div>
+        <div id="csv-import" style="visibility: hidden;">
+            <p style="height: 1.5em; line-height: 1.5em; display: inline-block">
+                Import Occurrences
+                <i class="add square green link big icon" onclick="show_import_modal()"></i>
+            </p>
+        </div>
         <div class="add-person">
             <p style="height: 1.5em; line-height: 1.5em; display: inline-block">
                 Add Occurrence
@@ -76,6 +82,21 @@
         </div>
     </div>
 
+    <div id="import-modal" class="ui modal">
+        <div class="header">Import Occurrences</div>
+        <div class="content">
+            <div>
+                <form id="add-occurrences-file">
+                    <input type="file" id="occ-csv" name="occ_csv">
+                </form>
+            </div>
+        </div>
+        <div class="actions">
+            <div class="ui positive button">Create</div>
+            <div class="ui negative button">Nevermind</div>
+        </div>
+    </div>
+
     <div id="icons">
         <i class="large green checkmark box link icon"></i>
         <i class="large red remove circle link icon"></i>
@@ -89,7 +110,9 @@
             judge_sel: $('#judge-select'),
             assign_table: $('#assign-table'),
             add_occ: $('.add-person'),
+            import_occs: $('#csv-import'),
             add_assign_modal: $('#add-modal'),
+            import_assign_modal: $('#import-modal'),
             student_sel: $("#student-sel"),
             add_form: $("#add-form"),
             icons: $("#icons")
@@ -103,6 +126,7 @@
         var types = ['Speech and Impromptu', 'Interview'];
 
         function change_event() {
+            ele.import_occs.css('visibility', 'visible');
             clear_table();
             state.show_occ = [];
             state.selected_event = parseInt(ele.event_sel.val());
@@ -257,6 +281,10 @@
             ele.add_assign_modal.modal('show');
         }
 
+        function show_import_modal() {
+            ele.import_assign_modal.modal('show');
+        }
+
         function add_assign() {
             if (ele.add_form[0].checkValidity()) {
                 $("input[name='event']").val(state.selected_event);
@@ -318,6 +346,31 @@
             );
         }
 
+        function import_assign() {
+            var occ_data = new FormData();
+            occ_data.append('event', state.selected_event);
+            occ_data.append('file', document.getElementById('occ-csv').files[0]);
+
+            $.ajax({
+                type: 'post',
+                url: data.urls.bulk_create,
+                data: occ_data,
+                success: function (result) {
+                    if (result.result == 'success') {
+                        console.log('success');
+                        data.occurrences = data.occurrences.concat(result.occurrences);
+                        refresh_occ();
+                        return true;
+                    } else {
+                        console.error(result.message);
+                        return false;
+                    }
+                },
+                processData: false,
+                contentType: false
+            })
+        }
+
         function init(){
             $.each(data.events, function(i, event) {
                 ele.event_sel
@@ -337,6 +390,10 @@
                 onHidden: function() {
                     ele.add_form[0].reset();
                 }
+            });
+
+            ele.import_assign_modal.modal({
+                onApprove: import_assign
             });
 
             $("select[name='type']").dropdown();

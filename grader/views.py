@@ -1022,7 +1022,8 @@ def assignments_view(request):
         urls = {
             'create': reverse('assignment_create'),
             'edit': reverse('assignment_edit'),
-            'delete': reverse('assignment_delete')
+            'delete': reverse('assignment_delete'),
+            'bulk_create': reverse('assignments_create')
         }
 
         data = {
@@ -1177,6 +1178,7 @@ def assignment_delete(request):
             'result': 'success',
             'message': 'Deletion succeeded'
         })
+
 
 def assignments_create(request):
     if request.method == 'POST' and request.user.is_superuser:

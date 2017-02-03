@@ -46,6 +46,7 @@ urlpatterns = [
 
     url(r'^assignments/$', views.assignments_view, name='assignments_view'),
     url(r'^assignments/create/$', views.assignment_create, name='assignment_create'),
+    url(r'^assignments/bulk_create/$', views.assignments_create, name='assignments_create'),
     url(r'^assignments/edit/$', views.assignment_edit, name='assignment_edit'),
     url(r'^assignments/delete/$', views.assignment_delete, name='assignment_delete')
 
