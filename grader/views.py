@@ -767,6 +767,11 @@ def judge_create(request):
         else:
             error += 'Must supply a room. '
 
+        if request.POST.get('email'):
+            new_user.email = request.POST['email']
+        else:
+            error += 'Must supply a email. '
+
         if request.POST.get('event'):
             try:
                 n_event = Event.objects.get(id=int(request.POST['event']))
