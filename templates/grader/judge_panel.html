@@ -53,15 +53,21 @@
         <div class="header">Add Judges(s)</div>
         <div class="content">
             <form id="add-judge-form" class="ui form" action="{% url 'judge_create' %}">
-                <div class="three fields">
+                <label>Name</label>
+                <div class="two fields">
                     <div class="field">
                         <input type="text" name="first_name" placeholder="First Name" required>
                     </div>
                     <div class="field">
                         <input type="text" name="last_name" placeholder="Last Name" required>
                     </div>
+                </div>
+                <div class="two fields">
                     <div class="field">
                         <input type="text" name="room" placeholder="Room" required>
+                    </div>
+                    <div class="field">
+                        <input type="email" name="email" placeholder="Email" required>
                     </div>
                 </div>
                 <input type="hidden" name="event">
