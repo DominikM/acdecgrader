@@ -61,13 +61,9 @@ def export_scores(response, event_id, type):
             if len(speeches):
                 students_average_interview[student] = sum([interview.overall_score for interview in interviews])/len(interviews)
 
-
-        all_students = set(students_average_speech.keys())
-        all_students.update(students_average_interview.keys())
-
         csv_writer.writerow(['Student ID', 'Student', 'Overall Speech', 'Overall Interview'])
 
-        for student in all_students:
+        for student in Student.objects.all():
             csv_writer.writerow([
                 student.comp_id,
                 student.first_name + ' ' + student.last_name,
