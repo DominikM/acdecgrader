@@ -42,11 +42,11 @@
                     <td>
                         {% if time.type %}
                         <a class="ui button" href="{% url 'interview'%}?time={{ time.id }}&score={{ time.score_id }}">
-                            {% if time.score %} Edit {% else %} Score {% endif %}
+                            {% if time.score >= 0 %} Edit {% else %} Score {% endif %}
                         </a>
                         {% else %}
                         <a class="ui button" href="{% url 'speech' %}?time={{ time.id }}&score={{ time.score_id }}">
-                            {% if time.score %} Edit {% else %} Score {% endif %}
+                            {% if time.score >= 0 %} Edit {% else %} Score {% endif %}
                         </a>
                         {% endif %}
                     </td>
