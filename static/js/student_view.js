@@ -295,7 +295,11 @@ function init_page() {
 
     add_student_modal
         .modal({
-            onApprove: add_student
+            onApprove: add_student,
+            onHidden: function() {
+                    elements.add_student_form[0].reset();
+                    rank_dropdown.dropdown('restore defaults');
+                }
         });
 
     event_selector.selectedIndex = -1;
