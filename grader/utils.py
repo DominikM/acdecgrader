@@ -112,9 +112,9 @@ def export_scores(response, event_id, type):
         csv_writer.writerow(interview_fieldnames)
         for interview in interview_scores:
             try:
-                student = speech.occurrence.student
+                student = interview.occurrence.student
             except Occurrence.DoesNotExist:
-                student = Student.objects.get(comp_id=speech.student_id)
+                student = Student.objects.get(comp_id=interview.student_id)
 
             csv_writer.writerow([
                 student.comp_id,
