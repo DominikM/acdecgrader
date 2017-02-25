@@ -1073,15 +1073,7 @@ def assignment_create(request):
         else:
             error += 'Must supply a judge. '
 
-        if request.POST.get('student'):
-            try:
-                n_student = Student.objects.get(id=int(request.POST['student']))
-                new_occ.student = n_student
-            except Student.DoesNotExist:
-                error += 'Not a valid student id. '
-        else:
-            error += 'Must supply a student. '
-
+        n_event = None
         if request.POST.get('event'):
             try:
                 n_event = Event.objects.get(id=int(request.POST['event']))
@@ -1091,6 +1083,15 @@ def assignment_create(request):
 
         else:
             error += 'Must supply an event id. '
+
+        if request.POST.get('student') and n_event:
+            try:
+                n_student = Student.objects.get(id=int(request.POST['student']), event=n_event)
+                new_occ.student = n_student
+            except Student.DoesNotExist:
+                error += 'Not a valid student id. '
+        else:
+            error += 'Must supply a student. '
 
         if request.POST.get('type'):
             new_occ.type = int(request.POST['type'])
@@ -1215,7 +1216,7 @@ def assignments_create(request):
             time_string = row[2]
             type = int(row[3])
 
-            student = Student.objects.get(comp_id=student_comp_id)
+            student = Student.objects.get(comp_id=student_comp_id, event=event)
             judge = User.objects.get(email=judge_email).judge
             time = datetime.strptime(time_string, '%I:%M %p')
 
