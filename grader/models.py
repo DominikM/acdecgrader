@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 class Judge(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     room = models.CharField(null=True, max_length=10)
-    event = models.ForeignKey('Event', null=True)
+    event = models.ForeignKey('Event', on_delete=models.CASCADE, null=True)
     password = models.CharField(max_length=100)
 
     class Meta:
@@ -26,7 +26,7 @@ class Student(models.Model):
     comp_id = models.IntegerField()
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    event = models.ForeignKey('Event')
+    event = models.ForeignKey('Event', on_delete=models.CASCADE)
     rank = models.IntegerField(choices=rank)
     # TODO: how to point a student at a specific time slot and at a judge?
 
@@ -58,8 +58,8 @@ class Score(models.Model):
     student_first_name = models.CharField(max_length=30)
     student_last_name = models.CharField(max_length=30)
     overall_score = models.IntegerField(blank=True)
-    grader = models.ForeignKey(User)
-    event = models.ForeignKey('Event')
+    grader = models.ForeignKey(User, on_delete=models.CASCADE)
+    event = models.ForeignKey('Event', on_delete=models.CASCADE)
 
 
 class SpeechScore(Score):
@@ -132,7 +132,7 @@ class Event(models.Model):
 
 
 class Time(models.Model):
-    event = models.ForeignKey('Event')
+    event = models.ForeignKey('Event', on_delete=models.CASCADE)
     start = models.TimeField()
     name = models.CharField(max_length=100)
 
@@ -144,12 +144,12 @@ time_types = (
 
 
 class Occurrence(models.Model):
-    judge = models.ForeignKey('Judge')
-    student = models.ForeignKey('Student')
+    judge = models.ForeignKey('Judge', on_delete=models.CASCADE)
+    student = models.ForeignKey('Student', on_delete=models.CASCADE)
     # time = models.ForeignKey('Time')
     time = models.TimeField()
     type = models.SmallIntegerField(choices=time_types)
-    event = models.ForeignKey('Event')
-    speech_score = models.OneToOneField('SpeechScore', null=True)
-    int_score = models.OneToOneField('InterviewScore', null=True)
+    event = models.ForeignKey('Event', on_delete=models.CASCADE)
+    speech_score = models.OneToOneField('SpeechScore', on_delete=models.CASCADE, null=True)
+    int_score = models.OneToOneField('InterviewScore', on_delete=models.CASCADE, null=True)
 

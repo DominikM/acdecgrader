@@ -15,7 +15,7 @@ import json
 
 
 def index(request):
-    if request.user.is_authenticated() and not request.user.is_superuser:
+    if request.user.is_authenticated and not request.user.is_superuser:
         cur_judge = request.user.judge
         scheduled = cur_judge.occurrence_set.order_by('time')
         scheduled_dicts = []
@@ -106,7 +106,7 @@ def login_view(request):
 
 
 def speech(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         if request.method == "POST":
             if request.POST.get('score'):
                 score_data = SpeechForm(request.POST, instance=SpeechScore.objects.get(id=int(request.POST['score'])))
@@ -183,7 +183,7 @@ def speech(request):
 
 
 def interview(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         if request.method == "POST":
             if request.POST.get('score'):
                 score_data = InterviewForm(request.POST, instance=InterviewScore.objects.get(id=int(request.POST['score'])))
